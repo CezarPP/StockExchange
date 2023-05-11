@@ -1,4 +1,4 @@
-package client;
+package org.gui;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
