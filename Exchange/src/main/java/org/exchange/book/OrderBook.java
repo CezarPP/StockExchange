@@ -2,6 +2,7 @@ package org.exchange.book;
 
 import org.common.symbols.Symbol;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.TreeMap;
@@ -13,8 +14,8 @@ public class OrderBook implements OrderBookInterface {
 
     OrderBook(Symbol symbol) {
         this.symbol = symbol;
-        askLimits = new TreeMap<>();
-        bidLimits = new TreeMap<>();
+        askLimits = new TreeMap<>(); // ascending
+        bidLimits = new TreeMap<>(Collections.reverseOrder()); // descending
         orders = new HashMap<>();
     }
 
@@ -33,11 +34,15 @@ public class OrderBook implements OrderBookInterface {
         return firstEntry.getValue();
     }
 
-    void addLimit(TreeMap<Integer, Limit> limits, Limit limit) {
+    void addLimit(Map<Integer, Limit> limits, Limit limit) {
         limits.put(limit.price, limit);
     }
 
-    private void addNewSingleOrderWithMap(Order order, TreeMap<Integer, Limit> limitTree) {
+    void removeLimit(Map<Integer, Limit> limits, int limitPrice) {
+        limits.remove(limitPrice);
+    }
+
+    private void addNewSingleOrderToMap(Order order, TreeMap<Integer, Limit> limitTree) {
         int remainingQuantity = match(order);
         if (remainingQuantity == order.quantity())
             return;
@@ -54,9 +59,9 @@ public class OrderBook implements OrderBookInterface {
     @Override
     public void addNewSingleOrder(Order order) {
         if (order.side() == Side.BUY) {
-            addNewSingleOrderWithMap(order, bidLimits);
+            addNewSingleOrderToMap(order, bidLimits);
         } else {
-            addNewSingleOrderWithMap(order, askLimits);
+            addNewSingleOrderToMap(order, askLimits);
         }
     }
 
@@ -71,26 +76,30 @@ public class OrderBook implements OrderBookInterface {
     }
 
     private int matchBuyOrder(Order order) {
-        //TODO()
-        return 0;
-/*        int remainingQuantity = order.quantity();
-        Limit limit = getFirstLimit(askLimits);
-        while(remainingQuantity > 0 &&
-                limit != null && limit.price < order.price()) {
+        // TODO(send client messages)
 
-            while(remainingQuantity > 0 && limit.getFirstOrder() != null) {
-                LimitOrder firstOrder = limit.getFirstOrder();
-                
+        int remainingQuantity = order.quantity();
+        Limit firstLimit = getFirstLimit(askLimits);
+        while (remainingQuantity > 0 &&
+                firstLimit != null && firstLimit.price < order.price()) {
+            LimitOrder crtMarketableOrder = firstLimit.getFirstOrder();
+            while (remainingQuantity > 0 && crtMarketableOrder != null) {
+                remainingQuantity -= crtMarketableOrder.decreaseQuantity(remainingQuantity);
+                if (crtMarketableOrder.getQuantity() == 0)
+                    firstLimit.removeFirstOrder();
+                crtMarketableOrder = firstLimit.getFirstOrder();
             }
-
-            limit = getFirstLimit(askLimits);
+            if (firstLimit.getFirstOrder() == null)
+                removeLimit(askLimits, firstLimit.price);
+            firstLimit = getFirstLimit(askLimits);
         }
 
-            return order.quantity() - remainingQuantity;*/
+        return order.quantity() - remainingQuantity;
     }
 
     private int matchSellOrder(Order order) {
-        //TODO()
+        //TODO(send client messages)
+        // TODO()
         return 0;
     }
 }

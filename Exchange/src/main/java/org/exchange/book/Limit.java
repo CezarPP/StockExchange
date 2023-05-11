@@ -37,6 +37,17 @@ public class Limit implements Iterable<LimitOrder> {
         if (order.getNxt() != null) {
             order.getNxt().setPrev(order.getPrev());
         }
+        if (order == head) {
+            head = order.getNxt();
+        }
+        if (head == null)
+            head = tail;
+    }
+
+    void removeFirstOrder() {
+        head = head.getNxt();
+        if (head == null)
+            tail = null;
     }
 
     LimitOrder getFirstOrder() {

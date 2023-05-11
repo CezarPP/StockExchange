@@ -17,6 +17,7 @@ public class WriteClientThread extends Thread {
         try {
             BufferedReader inputReader = new BufferedReader(new InputStreamReader(System.in));
             while (true) {
+                // TODO(send commands from interface)
                 String request = inputReader.readLine().toLowerCase();
                 out.println(request);
                 out.flush();

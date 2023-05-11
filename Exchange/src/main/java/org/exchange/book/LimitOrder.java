@@ -3,7 +3,7 @@ package org.exchange.book;
 public class LimitOrder {
     private final int id;
     private int quantity;
-    LimitOrder nxt, prev;
+    private LimitOrder nxt, prev;
 
     public LimitOrder(int id, int quantity, LimitOrder prev, LimitOrder nxt) {
         this.id = id;

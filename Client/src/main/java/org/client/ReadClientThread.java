@@ -12,6 +12,7 @@ public class ReadClientThread extends Thread {
     @Override
     public void run() {
         try {
+            // TODO(send commands to interface)
             String response;
             while ((response = in.readLine()) != null) {
                 System.out.println(response);

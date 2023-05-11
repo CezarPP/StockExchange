@@ -6,7 +6,6 @@ public interface OrderBookInterface {
     void cancelOrder(int orderID);
 
     /**
-     *
      * @param order Order from fix
      * @return returns the matched quantity
      */
