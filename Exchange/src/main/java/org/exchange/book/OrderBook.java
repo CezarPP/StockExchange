@@ -2,20 +2,17 @@ package org.exchange.book;
 
 import org.common.symbols.Symbol;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 
 public class OrderBook implements OrderBookInterface {
     private final Symbol symbol;
-    private final TreeMap<Integer, Limit> askLimits, bidLimits;
+    private final LimitsMap<Integer, Limit> askLimits, bidLimits;
     private final HashMap<Integer, LimitOrder> orders;
 
     OrderBook(Symbol symbol) {
         this.symbol = symbol;
-        askLimits = new TreeMap<>(); // ascending
-        bidLimits = new TreeMap<>(Collections.reverseOrder()); // descending
+        askLimits = new LimitsTreeMap<>(); // ascending
+        bidLimits = new LimitsTreeMap<>(Collections.reverseOrder()); // descending
         orders = new HashMap<>();
     }
 
@@ -23,51 +20,59 @@ public class OrderBook implements OrderBookInterface {
         return symbol;
     }
 
-    private Limit getLimit(Integer price, TreeMap<Integer, Limit> limitTree) {
+    private Limit getLimit(Integer price, LimitsMap<Integer, Limit> limitTree) {
         return limitTree.get(price);
     }
 
-    private Limit getFirstLimit(TreeMap<Integer, Limit> limitTree) {
-        Map.Entry<Integer, Limit> firstEntry = limitTree.firstEntry();
+    private Limit getFirstLimit(LimitsMap<Integer, Limit> limitTree) {
+        var firstEntry = limitTree.firstEntry();
         if (firstEntry == null)
             return null;
         return firstEntry.getValue();
     }
 
-    void addLimit(Map<Integer, Limit> limits, Limit limit) {
-        limits.put(limit.price, limit);
+    void addLimit(LimitsMap<Integer, Limit> limits, Limit limit) {
+        limits.put(limit.getPrice(), limit);
     }
 
-    void removeLimit(Map<Integer, Limit> limits, int limitPrice) {
+    void removeLimit(LimitsMap<Integer, Limit> limits, int limitPrice) {
         limits.remove(limitPrice);
     }
 
-    private void addNewSingleOrderToMap(Order order, TreeMap<Integer, Limit> limitTree) {
-        int remainingQuantity = match(order);
-        if (remainingQuantity == order.quantity())
+    private void addNewSingleOrderToMap(Order _order, LimitsMap<Integer, Limit> limitTree, Side side) {
+        int remainingQuantity = match(_order);
+        if (remainingQuantity == 0)
             return;
+        Order order = new Order(_order.id(), _order.symbol(), _order.price(), remainingQuantity, _order.side());
         Limit limit = getLimit(order.price(), limitTree);
         if (limit == null) {
-            limit = new Limit(order.price(), new LimitOrder(order, null, null));
+            limit = new Limit(order.price(), side);
             addLimit(limitTree, limit);
-        } else {
-            limit.addOrder(order);
         }
-        // TODO(add to orders map)
+        orders.put(order.id(), limit.addOrder(order));
     }
 
     @Override
     public void addNewSingleOrder(Order order) {
         if (order.side() == Side.BUY) {
-            addNewSingleOrderToMap(order, bidLimits);
+            addNewSingleOrderToMap(order, bidLimits, Side.BUY);
         } else {
-            addNewSingleOrderToMap(order, askLimits);
+            addNewSingleOrderToMap(order, askLimits, Side.SELL);
         }
     }
 
     @Override
     public void cancelOrder(int orderID) {
-        //TODO()
+        LimitOrder order = orders.get(orderID);
+        Limit parentLimit = order.getParentLimit();
+        parentLimit.removeOrder(order);
+        if (parentLimit.isEmpty()) {
+            if (parentLimit.getSide() == Side.BUY)
+                bidLimits.remove(parentLimit.getPrice());
+            else
+                askLimits.remove(parentLimit.getPrice());
+        }
+        // TODO(send client message)
     }
 
     @Override
@@ -75,31 +80,52 @@ public class OrderBook implements OrderBookInterface {
         return (order.side() == Side.BUY) ? matchBuyOrder(order) : matchSellOrder(order);
     }
 
+    /**
+     * @param order -> order
+     * @return -> remaining quantity
+     */
     private int matchBuyOrder(Order order) {
         // TODO(send client messages)
 
         int remainingQuantity = order.quantity();
         Limit firstLimit = getFirstLimit(askLimits);
         while (remainingQuantity > 0 &&
-                firstLimit != null && firstLimit.price < order.price()) {
-            LimitOrder crtMarketableOrder = firstLimit.getFirstOrder();
-            while (remainingQuantity > 0 && crtMarketableOrder != null) {
+                firstLimit != null && firstLimit.getPrice() <= order.price()) {
+            for (LimitOrder crtMarketableOrder = firstLimit.getFirstOrder();
+                 remainingQuantity > 0 && crtMarketableOrder != null;
+                 crtMarketableOrder = firstLimit.getFirstOrder()) {
+
                 remainingQuantity -= crtMarketableOrder.decreaseQuantity(remainingQuantity);
                 if (crtMarketableOrder.getQuantity() == 0)
                     firstLimit.removeFirstOrder();
-                crtMarketableOrder = firstLimit.getFirstOrder();
             }
             if (firstLimit.getFirstOrder() == null)
-                removeLimit(askLimits, firstLimit.price);
+                removeLimit(askLimits, firstLimit.getPrice());
             firstLimit = getFirstLimit(askLimits);
         }
 
-        return order.quantity() - remainingQuantity;
+        return remainingQuantity;
     }
 
     private int matchSellOrder(Order order) {
         //TODO(send client messages)
-        // TODO()
-        return 0;
+        int remainingQuantity = order.quantity();
+        Limit firstLimit = getFirstLimit(bidLimits);
+        while (remainingQuantity > 0 &&
+                firstLimit != null && firstLimit.getPrice() >= order.price()) {
+            for (LimitOrder crtMarketableOrder = firstLimit.getFirstOrder();
+                 remainingQuantity > 0 && crtMarketableOrder != null;
+                 crtMarketableOrder = firstLimit.getFirstOrder()) {
+
+                remainingQuantity -= crtMarketableOrder.decreaseQuantity(remainingQuantity);
+                if (crtMarketableOrder.getQuantity() == 0)
+                    firstLimit.removeFirstOrder();
+            }
+            if (firstLimit.getFirstOrder() == null)
+                removeLimit(bidLimits, firstLimit.getPrice());
+            firstLimit = getFirstLimit(bidLimits);
+        }
+
+        return order.quantity() - remainingQuantity;
     }
 }

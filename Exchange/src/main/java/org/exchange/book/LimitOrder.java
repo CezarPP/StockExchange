@@ -4,19 +4,22 @@ public class LimitOrder {
     private final int id;
     private int quantity;
     private LimitOrder nxt, prev;
+    private final Limit parentLimit;
 
-    public LimitOrder(int id, int quantity, LimitOrder prev, LimitOrder nxt) {
+    public LimitOrder(int id, int quantity, LimitOrder prev, LimitOrder nxt, Limit parentLimit) {
         this.id = id;
         this.quantity = quantity;
         this.nxt = nxt;
         this.prev = prev;
+        this.parentLimit = parentLimit;
     }
 
-    public LimitOrder(Order order, LimitOrder prev, LimitOrder nxt) {
+    public LimitOrder(Order order, LimitOrder prev, LimitOrder nxt, Limit parentLimit) {
         this.id = order.id();
         this.quantity = order.quantity();
         this.prev = prev;
         this.nxt = nxt;
+        this.parentLimit = parentLimit;
     }
 
     /**
@@ -56,5 +59,9 @@ public class LimitOrder {
 
     public void setPrev(LimitOrder prev) {
         this.prev = prev;
+    }
+
+    public Limit getParentLimit() {
+        return parentLimit;
     }
 }

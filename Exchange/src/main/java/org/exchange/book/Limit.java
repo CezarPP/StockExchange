@@ -3,31 +3,40 @@ package org.exchange.book;
 import java.util.Iterator;
 
 public class Limit implements Iterable<LimitOrder> {
-    final int price;
+    private final int price;
 
     /**
      * head and tail of the linked list of limit orders
      */
-    LimitOrder head, tail;
+    private LimitOrder head, tail;
 
-    Limit(int price) {
+    private final Side side;
+
+    Limit(int price, Side side) {
         this.price = price;
         head = tail = null;
+        this.side = side;
     }
 
-    Limit(int price, LimitOrder order) {
+    Limit(int price, LimitOrder order, Side side) {
         this.price = price;
         head = tail = order;
+        this.side = side;
     }
 
-    void addOrder(Order order) {
+    LimitOrder addOrder(Order order) {
         if (tail == null) {
-            head = tail = new LimitOrder(order, null, null);
+            head = tail = new LimitOrder(order, null, null, this);
         } else {
-            LimitOrder newLimitOrder = new LimitOrder(order, tail, null);
+            LimitOrder newLimitOrder = new LimitOrder(order, tail, null, this);
             tail.setNxt(newLimitOrder);
             tail = newLimitOrder;
         }
+        return tail;
+    }
+
+    public boolean isEmpty() {
+        return (head == null);
     }
 
     void removeOrder(LimitOrder order) {
@@ -71,5 +80,13 @@ public class Limit implements Iterable<LimitOrder> {
                 return temp;
             }
         };
+    }
+
+    public Side getSide() {
+        return side;
+    }
+
+    public int getPrice() {
+        return price;
     }
 }

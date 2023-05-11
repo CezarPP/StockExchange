@@ -7,7 +7,7 @@ public interface OrderBookInterface {
 
     /**
      * @param order Order from fix
-     * @return returns the matched quantity
+     * @return -> remaining quantity
      */
     int match(Order order);
 }
