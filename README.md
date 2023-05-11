@@ -17,7 +17,7 @@ Planned features:
 
 For the Limit Order Book I want to try the following data structures:
 
-* [ ] Java TreeMap (Red-Black Tree)
+* [x] Java TreeMap (Red-Black Tree)
 * [ ] Adaptive Radix Tree (Trie)
 * [ ] Others ?
 
@@ -25,4 +25,4 @@ Module structure of the project:
 
 * exchange - Limit order book and matching engine
 * client - Classes related to client processes
-* common - Common classes
+* common - Common classes -> fix protocol, symbols
