@@ -1,6 +1,4 @@
-package org.exchange;
-
-import org.client.StockExchangeClientFrame;
+package client;
 
 public class Main {
     public static void main(String[] args) {

@@ -4,7 +4,6 @@ target/
 !**/src/test/**/target/
 
 ### IntelliJ IDEA ###
-.idea/uiDesigner.xml
 .idea/modules.xml
 .idea/jarRepositories.xml
 .idea/compiler.xml
@@ -12,7 +11,6 @@ target/
 *.iws
 *.iml
 *.ipr
-*.class
 
 ### Eclipse ###
 .apt_generated

@@ -1,4 +1,4 @@
-package org.client;
+package client;
 
 import org.common.symbols.SymbolDOW;
 

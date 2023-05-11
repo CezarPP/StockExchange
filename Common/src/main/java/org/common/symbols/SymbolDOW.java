@@ -1,6 +1,6 @@
 package org.common.symbols;
 
-public enum SymbolDOW {
+public enum SymbolDOW implements Symbol {
     MMM("3M Company"),
     AXP("American Express"),
     AMGN("Amgen"),
