@@ -1,4 +1,4 @@
-package org.exchange;
+package org.exchange.book;
 
 public interface OrderBookInterface {
     void addNewSingleOrder(Order order);

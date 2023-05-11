@@ -1,4 +1,4 @@
-package org.exchange;
+package org.exchange.book;
 
 public enum Side {
     BUY,
