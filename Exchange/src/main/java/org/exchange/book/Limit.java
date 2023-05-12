@@ -25,6 +25,8 @@ public class Limit implements Iterable<LimitOrder> {
     }
 
     LimitOrder addOrder(Order order) {
+        assert (order.side() == this.side);
+        assert (order.price() == this.price);
         if (tail == null) {
             head = tail = new LimitOrder(order, null, null, this);
         } else {
@@ -50,7 +52,7 @@ public class Limit implements Iterable<LimitOrder> {
             head = order.getNxt();
         }
         if (head == null)
-            head = tail;
+            tail = null;
     }
 
     void removeFirstOrder() {

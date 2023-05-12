@@ -12,16 +12,8 @@ public class OrderBook implements OrderBookInterface {
     OrderBook(Symbol symbol) {
         this.symbol = symbol;
         askLimits = new LimitsTreeMap<>(); // ascending
-        bidLimits = new LimitsTreeMap<>(Collections.reverseOrder()); // descending
+        bidLimits = new LimitsTreeMap<Integer, Limit>(Collections.reverseOrder()); // descending
         orders = new HashMap<>();
-    }
-
-    public Symbol getSymbol() {
-        return symbol;
-    }
-
-    private Limit getLimit(Integer price, LimitsMap<Integer, Limit> limitTree) {
-        return limitTree.get(price);
     }
 
     private Limit getFirstLimit(LimitsMap<Integer, Limit> limitTree) {
@@ -29,14 +21,6 @@ public class OrderBook implements OrderBookInterface {
         if (firstEntry == null)
             return null;
         return firstEntry.getValue();
-    }
-
-    void addLimit(LimitsMap<Integer, Limit> limits, Limit limit) {
-        limits.put(limit.getPrice(), limit);
-    }
-
-    void removeLimit(LimitsMap<Integer, Limit> limits, int limitPrice) {
-        limits.remove(limitPrice);
     }
 
     private void addNewSingleOrderToMap(Order _order, LimitsMap<Integer, Limit> limitTree, Side side) {
@@ -54,6 +38,7 @@ public class OrderBook implements OrderBookInterface {
 
     @Override
     public void addNewSingleOrder(Order order) {
+        assert (order.symbol() == this.getSymbol());
         if (order.side() == Side.BUY) {
             addNewSingleOrderToMap(order, bidLimits, Side.BUY);
         } else {
@@ -126,6 +111,30 @@ public class OrderBook implements OrderBookInterface {
             firstLimit = getFirstLimit(bidLimits);
         }
 
-        return order.quantity() - remainingQuantity;
+        return remainingQuantity;
+    }
+
+    public Symbol getSymbol() {
+        return symbol;
+    }
+
+    private Limit getLimit(Integer price, LimitsMap<Integer, Limit> limitTree) {
+        return limitTree.get(price);
+    }
+
+    private void addLimit(LimitsMap<Integer, Limit> limits, Limit limit) {
+        limits.put(limit.getPrice(), limit);
+    }
+
+    private void removeLimit(LimitsMap<Integer, Limit> limits, int limitPrice) {
+        limits.remove(limitPrice);
+    }
+
+    public Limit getFirstBuyLimit() {
+        return getFirstLimit(bidLimits);
+    }
+
+    public Limit getFirstSellLimit() {
+        return getFirstLimit(askLimits);
     }
 }
