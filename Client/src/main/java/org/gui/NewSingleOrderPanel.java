@@ -1,6 +1,6 @@
 package org.gui;
 
-import org.common.symbols.SymbolDOW;
+import org.common.symbols.Symbol;
 
 import javax.swing.*;
 import java.awt.*;
@@ -12,7 +12,7 @@ public class NewSingleOrderPanel extends JPanel {
         setBorder(BorderFactory.createTitledBorder("New Single Order"));
 
         // Stock dropdown
-        JComboBox<SymbolDOW> stockDropdown = new JComboBox<>(SymbolDOW.values());
+        JComboBox<Symbol> stockDropdown = new JComboBox<>(Symbol.values());
         add(stockDropdown);
 
         // Quantity label input and label

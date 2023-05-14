@@ -1,4 +1,6 @@
-package org.common.fix;
+package org.common.fix.header;
+
+import org.common.fix.FixMessage;
 
 import java.time.OffsetDateTime;
 import java.time.format.DateTimeFormatter;
@@ -64,67 +66,43 @@ public class FixHeader {
                 "34=" + messageSeqNum + FixMessage.delimiter +
                 "52=" + formattedSendingTime() + FixMessage.delimiter;
     }
-}
 
-enum BeginString {
-    Fix_4_4("FIX.4.4");
-    public final String label;
+    public static FixHeader fromString(String str) {
+        String[] parts = str.split(FixMessage.delimiter);
 
-    BeginString(String label) {
-        this.label = label;
+        BeginString beginString = null;
+        int bodyLength = -1;
+        MessageType messageType = null;
+        String senderCompID = null;
+        String targetCompID = null;
+        int messageSeqNum = 0;
+        OffsetDateTime sendingTime = null;
+
+        for (String part : parts) {
+            String[] keyValue = part.split("=");
+            String key = keyValue[0];
+            String value = keyValue[1];
+
+            switch (key) {
+                case "8" -> beginString = BeginString.Fix_4_4;
+                case "9" -> bodyLength = Integer.parseInt(value);
+                case "35" -> messageType = MessageType.fromValue(value);
+                case "49" -> senderCompID = value;
+                case "56" -> targetCompID = value;
+                case "34" -> messageSeqNum = Integer.parseInt(value);
+                case "52" ->
+                        sendingTime = OffsetDateTime.parse(value, DateTimeFormatter.ofPattern("uuuuMMdd-HH:mm:ss"));
+                default -> throw new IllegalArgumentException("Unknown field in header: " + key);
+            }
+        }
+
+        if (beginString == null || messageType == null || senderCompID == null
+                || targetCompID == null || sendingTime == null || messageSeqNum == 0 || bodyLength < 0) {
+            throw new IllegalArgumentException("Required fields missing in header");
+        }
+
+        return new FixHeader(beginString, bodyLength, messageType, senderCompID, targetCompID, messageSeqNum, sendingTime);
     }
+
 }
 
-enum MessageType {
-    HeartBeat("0"),
-    TestRequest("1"),
-    ResendRequest("2"),
-    Reject("3"),
-    SequenceReset("4"),
-    Logout("5"),
-    IndicationOfInterest("6"),
-    Advertisement("7"),
-    ExecutionReport("8"),
-    OrderCancelReject("9"),
-    Logon("A"),
-    News("B"),
-    Email("C"),
-    NewOrderSingle("D"),
-    NewOrderList("E"),
-    OrderCancelRequest("F"),
-    OrderCancelReplaceRequest("G"),
-    OrderStatusRequest("H"),
-    Allocation("J"),
-    ListCancelRequest("K"),
-    ListExecute("L"),
-    ListStatusRequest("M"),
-    ListStatus("N"),
-    AllocationAck("P"),
-    DontKnowTrade("Q"),
-    QuoteRequest("R"),
-    Quote("S"),
-    SettlementInstructions("T"),
-    MarketDataRequest("V"),
-    MarketDataSnapshotFullRefresh("W"),
-    MarketDataIncrementRefresh("X"),
-    MarketDataRquestReject("Y"),
-    QuoteCancel("Z"),
-    QuoteStatusReject("a"),
-    QuoteAcknowledgement("b"),
-    SecurityDefinitionRequest("c"),
-    SecurityDefinition("d"),
-    SecurityStatusRequest("e"),
-    SecurityStatus("f"),
-    TradingSessionStatusRequest("g"),
-    TradingSessionStatus("h"),
-    MassQuote("i"),
-    BusinessMessageReject("j"),
-    BidRequest("k"),
-    BidResponse("l"),
-    ListStrikePrice("m");
-    public final String label;
-
-    MessageType(String label) {
-        this.label = label;
-    }
-}

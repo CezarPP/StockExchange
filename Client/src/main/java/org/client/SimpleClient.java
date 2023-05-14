@@ -19,14 +19,8 @@ public class SimpleClient {
              PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
              BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()))) {
 
-            Thread writeThread = new WriteClientThread(out);
-            Thread readThread = new ReadClientThread(in);
-
-            writeThread.start();
-            readThread.start();
-
-            writeThread.join();
-            readThread.join();
+            FixEngineClient fixEngine = new FixEngineClient(in, out);
+            fixEngine.start();
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
