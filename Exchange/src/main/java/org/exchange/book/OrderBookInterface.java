@@ -1,5 +1,7 @@
 package org.exchange.book;
 
+import java.util.List;
+
 public interface OrderBookInterface {
     void addNewSingleOrder(Order order);
 
@@ -10,4 +12,12 @@ public interface OrderBookInterface {
      * @return -> remaining quantity
      */
     int match(Order order);
+
+    /**
+     *
+     * @param cntEntries the number of aggregated entries -> limits
+     * @return MarketDataEntries for fix
+     */
+    List<Limit> getFirstSellEntries(int cntEntries);
+    List<Limit> getFirstBuyEntries(int cntEntries);
 }

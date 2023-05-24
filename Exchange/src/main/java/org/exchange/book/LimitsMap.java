@@ -1,5 +1,6 @@
 package org.exchange.book;
 
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -16,4 +17,6 @@ public interface LimitsMap<K, V> {
     void remove(K key);
 
     V get(K key);
+
+    List<V> getFirstN(int cnt);
 }

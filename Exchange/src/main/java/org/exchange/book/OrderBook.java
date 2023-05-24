@@ -137,4 +137,15 @@ public class OrderBook implements OrderBookInterface {
     public Limit getFirstSellLimit() {
         return getFirstLimit(askLimits);
     }
+
+
+    @Override
+    public List<Limit> getFirstSellEntries(int cntEntries) {
+        return askLimits.getFirstN(cntEntries);
+    }
+
+    @Override
+    public List<Limit> getFirstBuyEntries(int cntEntries) {
+        return bidLimits.getFirstN(cntEntries);
+    }
 }

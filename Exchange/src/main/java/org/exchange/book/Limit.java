@@ -1,5 +1,8 @@
 package org.exchange.book;
 
+import org.common.fix.market_data.MarketDataEntry;
+import org.common.fix.market_data.MarketDataEntryType;
+
 import java.util.Iterator;
 
 public class Limit implements Iterable<LimitOrder> {
@@ -12,19 +15,19 @@ public class Limit implements Iterable<LimitOrder> {
 
     private final Side side;
 
-    Limit(int price, Side side) {
+    public Limit(int price, Side side) {
         this.price = price;
         head = tail = null;
         this.side = side;
     }
 
-    Limit(int price, LimitOrder order, Side side) {
+    public Limit(int price, LimitOrder order, Side side) {
         this.price = price;
         head = tail = order;
         this.side = side;
     }
 
-    LimitOrder addOrder(Order order) {
+    public LimitOrder addOrder(Order order) {
         assert (order.side() == this.side);
         assert (order.price() == this.price);
         if (tail == null) {
@@ -41,7 +44,7 @@ public class Limit implements Iterable<LimitOrder> {
         return (head == null);
     }
 
-    void removeOrder(LimitOrder order) {
+    public void removeOrder(LimitOrder order) {
         if (order.getPrev() != null) {
             order.getPrev().setNxt(order.getNxt());
         }
@@ -55,13 +58,13 @@ public class Limit implements Iterable<LimitOrder> {
             tail = null;
     }
 
-    void removeFirstOrder() {
+    public void removeFirstOrder() {
         head = head.getNxt();
         if (head == null)
             tail = null;
     }
 
-    LimitOrder getFirstOrder() {
+    public LimitOrder getFirstOrder() {
         return head;
     }
 
@@ -82,6 +85,24 @@ public class Limit implements Iterable<LimitOrder> {
                 return temp;
             }
         };
+    }
+
+    /**
+     * Computes the aggregate of the limit
+     *
+     * @param position -> the position in the order book
+     * @return -> a MarketDataEntry for fix
+     */
+    public MarketDataEntry getMarketDataEntry(int position) {
+        int quantity = 0, nrOrders = 0;
+        for (LimitOrder limitOrder : this) {
+            quantity += limitOrder.getQuantity();
+            nrOrders++;
+        }
+        if (side == Side.BUY) {
+            return new MarketDataEntry(MarketDataEntryType.BID, price, quantity, nrOrders, position);
+        }
+        return new MarketDataEntry(MarketDataEntryType.OFFER, price, quantity, nrOrders, position);
     }
 
     public Side getSide() {
