@@ -1,5 +1,6 @@
 package org.exchange.book;
 
+import org.common.fix.order.Side;
 import org.common.symbols.Symbol;
 
 import java.io.IOException;
@@ -12,9 +13,8 @@ public class OrderBook extends Thread implements OrderBookInterface {
     private final Symbol symbol;
     private final LimitsMap<Float, Limit> askLimits, bidLimits;
     private final HashMap<Integer, LimitOrder> orders;
-
-    int orderId = 0;
-
+    static int orderId = 0;
+    static int execId = 0;
     private final Queue<Order> queue = new ConcurrentLinkedQueue<>();
 
     OrderBook(Symbol symbol) {
@@ -27,7 +27,8 @@ public class OrderBook extends Thread implements OrderBookInterface {
     public synchronized int addToQueue(Order order) {
         if (!order.isCancel()) {
             orderId++;
-            queue.add(new Order(orderId, order.symbol(), order.price(), order.quantity(), order.side(), order.isCancel()));
+            order.setId(orderId);
+            queue.add(order);
             return orderId;
         }
         queue.add(order);
@@ -41,23 +42,23 @@ public class OrderBook extends Thread implements OrderBookInterface {
         return firstEntry.getValue();
     }
 
-    private void addNewSingleOrderToMap(Order _order, LimitsMap<Float, Limit> limitTree, Side side) {
-        int remainingQuantity = match(_order);
+    private void addNewSingleOrderToMap(Order order, LimitsMap<Float, Limit> limitTree, Side side) {
+        int remainingQuantity = match(order);
         if (remainingQuantity == 0)
             return;
-        Order order = new Order(_order.id(), _order.symbol(), _order.price(), remainingQuantity, _order.side(), false);
-        Limit limit = getLimit(order.price(), limitTree);
+        order.setQuantity(remainingQuantity);
+        Limit limit = getLimit(order.getPrice(), limitTree);
         if (limit == null) {
-            limit = new Limit(order.price(), side);
+            limit = new Limit(order.getPrice(), side);
             addLimit(limitTree, limit);
         }
-        orders.put(order.id(), limit.addOrder(order));
+        orders.put(order.getId(), limit.addOrder(order));
     }
 
     @Override
     public void addNewSingleOrder(Order order) {
-        assert (order.symbol() == this.getSymbol());
-        if (order.side() == Side.BUY) {
+        assert (order.getSymbol() == this.getSymbol());
+        if (order.getSide() == Side.BUY) {
             addNewSingleOrderToMap(order, bidLimits, Side.BUY);
         } else {
             addNewSingleOrderToMap(order, askLimits, Side.SELL);
@@ -80,7 +81,7 @@ public class OrderBook extends Thread implements OrderBookInterface {
 
     @Override
     public int match(Order order) {
-        return (order.side() == Side.BUY) ? matchBuyOrder(order) : matchSellOrder(order);
+        return (order.getSide() == Side.BUY) ? matchBuyOrder(order) : matchSellOrder(order);
     }
 
     /**
@@ -90,10 +91,10 @@ public class OrderBook extends Thread implements OrderBookInterface {
     private int matchBuyOrder(Order order) {
         // TODO(send client messages)
 
-        int remainingQuantity = order.quantity();
+        int remainingQuantity = order.getQuantity();
         Limit firstLimit = getFirstLimit(askLimits);
         while (remainingQuantity > 0 &&
-                firstLimit != null && firstLimit.getPrice() <= order.price()) {
+                firstLimit != null && firstLimit.getPrice() <= order.getPrice()) {
             for (LimitOrder crtMarketableOrder = firstLimit.getFirstOrder();
                  remainingQuantity > 0 && crtMarketableOrder != null;
                  crtMarketableOrder = firstLimit.getFirstOrder()) {
@@ -112,10 +113,10 @@ public class OrderBook extends Thread implements OrderBookInterface {
 
     private int matchSellOrder(Order order) {
         //TODO(send client messages)
-        int remainingQuantity = order.quantity();
+        int remainingQuantity = order.getQuantity();
         Limit firstLimit = getFirstLimit(bidLimits);
         while (remainingQuantity > 0 &&
-                firstLimit != null && firstLimit.getPrice() >= order.price()) {
+                firstLimit != null && firstLimit.getPrice() >= order.getPrice()) {
             for (LimitOrder crtMarketableOrder = firstLimit.getFirstOrder();
                  remainingQuantity > 0 && crtMarketableOrder != null;
                  crtMarketableOrder = firstLimit.getFirstOrder()) {
@@ -176,7 +177,7 @@ public class OrderBook extends Thread implements OrderBookInterface {
                 Order order = queue.poll();
                 assert order != null;
                 if (order.isCancel()) {
-                    this.cancelOrder(order.id());
+                    this.cancelOrder(order.getId());
                 } else {
                     this.addNewSingleOrder(order);
                 }

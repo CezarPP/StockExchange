@@ -2,6 +2,7 @@ package org.exchange.book;
 
 import org.common.fix.market_data.MarketDataEntry;
 import org.common.fix.market_data.MarketDataEntryType;
+import org.common.fix.order.Side;
 
 import java.util.Iterator;
 
@@ -28,8 +29,8 @@ public class Limit implements Iterable<LimitOrder> {
     }
 
     public LimitOrder addOrder(Order order) {
-        assert (order.side() == this.side);
-        assert (order.price() == this.price);
+        assert (order.getSide() == this.side);
+        assert (order.getPrice() == this.price);
         if (tail == null) {
             head = tail = new LimitOrder(order, null, null, this);
         } else {

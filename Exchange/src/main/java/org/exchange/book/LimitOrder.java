@@ -15,8 +15,8 @@ public class LimitOrder {
     }
 
     public LimitOrder(Order order, LimitOrder prev, LimitOrder nxt, Limit parentLimit) {
-        this.id = order.id();
-        this.quantity = order.quantity();
+        this.id = order.getId();
+        this.quantity = order.getQuantity();
         this.prev = prev;
         this.nxt = nxt;
         this.parentLimit = parentLimit;

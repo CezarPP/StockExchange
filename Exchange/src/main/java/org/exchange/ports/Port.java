@@ -8,7 +8,6 @@ import org.common.symbols.Symbol;
 import org.exchange.book.Order;
 import org.exchange.book.OrderBook;
 import org.exchange.book.OrderBookFactory;
-import org.exchange.book.Side;
 import org.exchange.fix.FixEnginePort;
 
 import java.io.BufferedReader;
@@ -16,6 +15,8 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.Map;
+import java.util.TreeMap;
 
 public class Port extends Thread {
     public FixEnginePort fixEnginePort;
@@ -24,12 +25,17 @@ public class Port extends Thread {
     private BufferedReader in;
 
 
+    // Map of outstanding orders of this client
+    // orderId -> Order
+    Map<Integer, Order> ordersMap;
+
     synchronized static int getNewClientId() {
         staticClientId++;
         return staticClientId;
     }
 
     public Port(Socket socket) {
+        this.ordersMap = new TreeMap<>();
         try {
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
             this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
@@ -68,8 +74,11 @@ public class Port extends Thread {
         int qty = fixBodyOrder.orderQuantity;
         float price = fixBodyOrder.price;
         Order order = new Order(1, symbol, price, qty,
-                (fixBodyOrder.side.label == '1') ? Side.BUY : Side.SELL, false);
+                fixBodyOrder.side, false);
         int orderId = orderBook.addToQueue(order);
+        ordersMap.put(orderId, order);
+
+
         // TODO(return orderId to client)
     }
 
@@ -78,7 +87,7 @@ public class Port extends Thread {
         Symbol symbol = fixBodyOrder.symbol;
         OrderBook orderBook = OrderBookFactory.getOrderBook(symbol);
         Order order = new Order(Integer.parseInt(fixBodyOrder.orderID), fixBodyOrder.symbol, 0,
-                fixBodyOrder.orderQuantity, (fixBodyOrder.side.label == '1') ? Side.BUY : Side.SELL, true);
+                fixBodyOrder.orderQuantity, fixBodyOrder.side, true);
         orderBook.addToQueue(order);
     }
 }

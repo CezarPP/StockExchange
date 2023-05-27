@@ -1,5 +1,6 @@
 package org.exchange.book;
 
+import org.common.fix.order.Side;
 import org.common.symbols.Symbol;
 import org.junit.jupiter.api.Test;
 
