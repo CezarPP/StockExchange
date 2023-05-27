@@ -21,7 +21,7 @@ public class FixBodyExecutionReport implements FixBody {
     /**
      * 17 -> ExecID	-> String -> Unique identifier of execution message as assigned by exchange
      */
-    public String execID;
+    public String execId;
 
     /**
      * 150 -> ExecType -> char -> Describes the purpose of the execution report
@@ -63,11 +63,29 @@ public class FixBodyExecutionReport implements FixBody {
      */
     public float avgPrice;
 
+    public FixBodyExecutionReport() {
+
+    }
+
+    public FixBodyExecutionReport(String orderID, String origClientOrderID, String execId, ExecType execType, OrderStatus orderStatus, Symbol symbol, Side side, float price, int leavesQuantity, int cumQty, float avgPrice) {
+        this.orderID = orderID;
+        this.origClientOrderID = origClientOrderID;
+        this.execId = execId;
+        this.execType = execType;
+        this.orderStatus = orderStatus;
+        this.symbol = symbol;
+        this.side = side;
+        this.price = price;
+        this.leavesQuantity = leavesQuantity;
+        this.cumQty = cumQty;
+        this.avgPrice = avgPrice;
+    }
+
     @Override
     public String toString() {
         return "37=" + orderID + FixMessage.delimiter +
                 "41=" + origClientOrderID + FixMessage.delimiter +
-                "17=" + execID + FixMessage.delimiter +
+                "17=" + execId + FixMessage.delimiter +
                 "150=" + execType + FixMessage.delimiter +
                 "39=" + orderStatus + FixMessage.delimiter +
                 "55=" + symbol + FixMessage.delimiter +
@@ -90,7 +108,7 @@ public class FixBodyExecutionReport implements FixBody {
             switch (key) {
                 case "37" -> report.orderID = value;
                 case "41" -> report.origClientOrderID = value;
-                case "17" -> report.execID = value;
+                case "17" -> report.execId = value;
                 case "150" -> report.execType = ExecType.fromValue(value.charAt(0));
                 case "39" -> report.orderStatus = OrderStatus.fromValue(value.charAt(0));
                 case "55" -> report.symbol = Symbol.fromValue(value);
