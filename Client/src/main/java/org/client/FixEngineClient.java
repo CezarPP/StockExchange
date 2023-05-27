@@ -27,12 +27,12 @@ import java.util.Map;
 public class FixEngineClient {
     private static final String SERVER_ADDRESS = "127.0.0.1";
     private static final int PORT = 8100;
-
-    final String clientOrderID = "Cezar";
     final String senderCompID = "Cezar SRL";
     final String targetCompID = "Exchange SRL";
     final String username = "Cezar";
     final static int marketDepth = 20;
+
+    int clientOrderID = 0;
     int crtSeqNr = 0;
     int reqID = 0;
     Map<String, Order> ordersSent;
@@ -57,9 +57,10 @@ public class FixEngineClient {
 
     public void sendNewSingleOrderLimit(Order order) {
         crtSeqNr++;
+        clientOrderID++;
 
         FixBodyOrder fixBody =
-                new FixBodyOrder(this.clientOrderID + crtSeqNr,
+                new FixBodyOrder(Integer.toString(clientOrderID),
                         order.symbol, order.side, OffsetDateTime.now(ZoneOffset.UTC),
                         OrderType.LIMIT, order.quantity, PriceType.PER_UNIT, order.price);
 
@@ -75,8 +76,8 @@ public class FixEngineClient {
         Order order = ordersSent.get(orderID);
         Order cancelOrder = new Order(order.symbol, order.price, order.quantity, order.side);
         FixBodyCancel fixBody =
-                new FixBodyCancel(order.clientOrderID, order.exchangeOrderID,
-                        cancelOrder.clientOrderID, cancelOrder.symbol, cancelOrder.side,
+                new FixBodyCancel(Integer.toString(order.clientOrderID), order.exchangeOrderID,
+                        Integer.toString(cancelOrder.clientOrderID), cancelOrder.symbol, cancelOrder.side,
                         OffsetDateTime.now(), cancelOrder.quantity);
 
         FixHeader fixHeader =

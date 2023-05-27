@@ -2,7 +2,6 @@ package org.gui;
 
 import org.client.Order;
 import org.common.fix.order.Side;
-import org.common.symbols.Symbol;
 
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;

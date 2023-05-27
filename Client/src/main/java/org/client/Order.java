@@ -5,7 +5,7 @@ import org.common.symbols.Symbol;
 
 public class Order {
     static int crtClientOrderID = 0;
-    public final String clientOrderID;
+    public final int clientOrderID;
     public final Symbol symbol;
     public final float price;
     public final int quantity;
@@ -14,7 +14,7 @@ public class Order {
 
     public Order(Symbol symbol, float price, int quantity, Side side) {
         crtClientOrderID++;
-        this.clientOrderID = String.valueOf(crtClientOrderID);
+        this.clientOrderID = crtClientOrderID;
         this.symbol = symbol;
         this.price = price;
         this.quantity = quantity;
