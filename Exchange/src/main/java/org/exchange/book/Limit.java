@@ -6,7 +6,7 @@ import org.common.fix.market_data.MarketDataEntryType;
 import java.util.Iterator;
 
 public class Limit implements Iterable<LimitOrder> {
-    private final int price;
+    private final float price;
 
     /**
      * head and tail of the linked list of limit orders
@@ -15,7 +15,7 @@ public class Limit implements Iterable<LimitOrder> {
 
     private final Side side;
 
-    public Limit(int price, Side side) {
+    public Limit(float price, Side side) {
         this.price = price;
         head = tail = null;
         this.side = side;
@@ -109,7 +109,7 @@ public class Limit implements Iterable<LimitOrder> {
         return side;
     }
 
-    public int getPrice() {
+    public float getPrice() {
         return price;
     }
 }

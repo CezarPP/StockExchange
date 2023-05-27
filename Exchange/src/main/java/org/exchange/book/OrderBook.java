@@ -2,32 +2,50 @@ package org.exchange.book;
 
 import org.common.symbols.Symbol;
 
+import java.io.IOException;
+import java.net.DatagramPacket;
+import java.net.DatagramSocket;
 import java.util.*;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
-public class OrderBook implements OrderBookInterface {
+public class OrderBook extends Thread implements OrderBookInterface {
     private final Symbol symbol;
-    private final LimitsMap<Integer, Limit> askLimits, bidLimits;
+    private final LimitsMap<Float, Limit> askLimits, bidLimits;
     private final HashMap<Integer, LimitOrder> orders;
+
+    int orderId = 0;
+
+    private final Queue<Order> queue = new ConcurrentLinkedQueue<>();
 
     OrderBook(Symbol symbol) {
         this.symbol = symbol;
         askLimits = new LimitsTreeMap<>(); // ascending
-        bidLimits = new LimitsTreeMap<Integer, Limit>(Collections.reverseOrder()); // descending
+        bidLimits = new LimitsTreeMap<Float, Limit>(Collections.reverseOrder()); // descending
         orders = new HashMap<>();
     }
 
-    private Limit getFirstLimit(LimitsMap<Integer, Limit> limitTree) {
+    public synchronized int addToQueue(Order order) {
+        if (!order.isCancel()) {
+            orderId++;
+            queue.add(new Order(orderId, order.symbol(), order.price(), order.quantity(), order.side(), order.isCancel()));
+            return orderId;
+        }
+        queue.add(order);
+        return 0;
+    }
+
+    private Limit getFirstLimit(LimitsMap<Float, Limit> limitTree) {
         var firstEntry = limitTree.firstEntry();
         if (firstEntry == null)
             return null;
         return firstEntry.getValue();
     }
 
-    private void addNewSingleOrderToMap(Order _order, LimitsMap<Integer, Limit> limitTree, Side side) {
+    private void addNewSingleOrderToMap(Order _order, LimitsMap<Float, Limit> limitTree, Side side) {
         int remainingQuantity = match(_order);
         if (remainingQuantity == 0)
             return;
-        Order order = new Order(_order.id(), _order.symbol(), _order.price(), remainingQuantity, _order.side());
+        Order order = new Order(_order.id(), _order.symbol(), _order.price(), remainingQuantity, _order.side(), false);
         Limit limit = getLimit(order.price(), limitTree);
         if (limit == null) {
             limit = new Limit(order.price(), side);
@@ -118,15 +136,15 @@ public class OrderBook implements OrderBookInterface {
         return symbol;
     }
 
-    private Limit getLimit(Integer price, LimitsMap<Integer, Limit> limitTree) {
+    private Limit getLimit(Float price, LimitsMap<Float, Limit> limitTree) {
         return limitTree.get(price);
     }
 
-    private void addLimit(LimitsMap<Integer, Limit> limits, Limit limit) {
+    private void addLimit(LimitsMap<Float, Limit> limits, Limit limit) {
         limits.put(limit.getPrice(), limit);
     }
 
-    private void removeLimit(LimitsMap<Integer, Limit> limits, int limitPrice) {
+    private void removeLimit(LimitsMap<Float, Limit> limits, float limitPrice) {
         limits.remove(limitPrice);
     }
 
@@ -147,5 +165,43 @@ public class OrderBook implements OrderBookInterface {
     @Override
     public List<Limit> getFirstBuyEntries(int cntEntries) {
         return bidLimits.getFirstN(cntEntries);
+    }
+
+    @Override
+    public void run() {
+        while (true) {
+            try {
+                if (queue.isEmpty())
+                    continue;
+                Order order = queue.poll();
+                assert order != null;
+                if (order.isCancel()) {
+                    this.cancelOrder(order.id());
+                } else {
+                    this.addNewSingleOrder(order);
+                }
+            } catch (Exception e) {
+                System.out.println("Error waiting for element in orderBook");
+                throw new RuntimeException(e);
+            }
+        }
+    }
+
+    /**
+     * @param broadcastMessage -> execution report
+     */
+    public static void broadcast(String broadcastMessage) {
+        try {
+            DatagramSocket socket = new DatagramSocket();
+            socket.setBroadcast(true);
+
+            byte[] buffer = broadcastMessage.getBytes();
+
+            DatagramPacket packet = new DatagramPacket(buffer, buffer.length, null, 4445);
+            socket.send(packet);
+            socket.close();
+        } catch (IOException e) {
+            System.out.println(e.getMessage());
+        }
     }
 }

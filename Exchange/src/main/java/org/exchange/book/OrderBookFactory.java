@@ -14,6 +14,7 @@ public class OrderBookFactory {
             return orderBook;
         orderBook = new OrderBook(symbol);
         orderBookMap.put(symbol, orderBook);
+        orderBook.start();
         return orderBook;
     }
 
