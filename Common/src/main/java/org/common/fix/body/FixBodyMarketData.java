@@ -59,8 +59,10 @@ public class FixBodyMarketData implements FixBody {
         while (i < parts.length) {
             StringBuilder marketDataEntry = new StringBuilder();
             int j;
-            for (j = 0; j < 5 && i < parts.length; j++, i++)
+            for (j = 0; j < 5 && i < parts.length; j++, i++) {
                 marketDataEntry.append(parts[i]);
+                marketDataEntry.append(FixMessage.delimiter);
+            }
             if (j != 5)
                 throw new IllegalArgumentException("Malformed MarketDataEntryAggregated");
             marketDataEntries.add(MarketDataEntry.fromString(marketDataEntry.toString()));

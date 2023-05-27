@@ -50,7 +50,7 @@ public class MarketDataEntry {
 
     @Override
     public String toString() {
-        return "269=" + marketDataEntryType.getValue() + FixMessage.delimiter +
+        return "269=" + marketDataEntryType + FixMessage.delimiter +
                 "270=" + price + FixMessage.delimiter +
                 "271=" + quantity + FixMessage.delimiter +
                 "346=" + nrOrders + FixMessage.delimiter +
