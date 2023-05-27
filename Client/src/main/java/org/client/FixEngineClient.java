@@ -55,11 +55,7 @@ public class FixEngineClient {
         }
     }
 
-    /**
-     * @param order -> order
-     * @return -> True sending the order was successful
-     */
-    public boolean sendNewSingleOrderLimit(Order order) {
+    public void sendNewSingleOrderLimit(Order order) {
         crtSeqNr++;
 
         FixBodyOrder fixBody =
@@ -72,8 +68,6 @@ public class FixEngineClient {
                         senderCompID, targetCompID, crtSeqNr, OffsetDateTime.now());
 
         send(new FixMessage(fixHeader, fixBody, FixTrailer.getTrailer(fixHeader, fixBody)));
-        // waitOrderResponse(order); // TODO(get exchange order id)
-        return true;
     }
 
     public void sendCancelOrder(String orderID) {
@@ -105,23 +99,6 @@ public class FixEngineClient {
     private void waitLoginResponse() {
         try {
             in.readLine();
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
-        }
-    }
-
-    /**
-     * wait for the confirmation of a received order
-     */
-    private void waitOrderResponse(Order order) {
-        try {
-            String confirmation = in.readLine();
-            FixMessage fixMessage = FixMessage.fromString(confirmation);
-            if (fixMessage.body() instanceof FixBodyExecutionReport fixBody) {
-                order.setExchangeOrderID(fixBody.orderID);
-            } else {
-                System.out.println("Message is not order response");
-            }
         } catch (IOException e) {
             System.out.println(e.getMessage());
         }

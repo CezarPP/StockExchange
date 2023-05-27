@@ -1,28 +1,27 @@
 package org.client;
 
 import org.common.fix.FixMessage;
-import org.common.fix.body.FixBody;
+import org.common.fix.body.FixBodyExecutionReport;
 import org.common.fix.body.FixBodyMarketData;
 import org.common.fix.header.MessageType;
 import org.common.fix.market_data.MarketDataEntry;
 import org.common.fix.market_data.MarketDataEntryType;
-import org.gui.BidAskPanel;
-import org.gui.PanelOrder;
-import org.gui.StockExchangeClientFrame;
+import org.common.fix.order.ExecType;
+import org.gui.*;
 
 import java.io.BufferedReader;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.List;
 
 public class ReadClientThread extends Thread {
     private final BufferedReader in;
     private final StockExchangeClientFrame frame;
 
+    private final UserOrdersPanel userOrdersPanel;
+
     ReadClientThread(BufferedReader in, StockExchangeClientFrame frame) {
         this.in = in;
         this.frame = frame;
+        this.userOrdersPanel = UserOrdersPanelFactory.getUserOrdersPanel();
     }
 
     @Override
@@ -34,6 +33,8 @@ public class ReadClientThread extends Thread {
                 FixMessage fixMessage = FixMessage.fromString(response);
                 if (fixMessage.header().messageType == MessageType.MarketDataSnapshotFullRefresh) {
                     addMarketDataToPanel(fixMessage, frame.getBidAskPanel());
+                } else if (fixMessage.header().messageType == MessageType.ExecutionReport) {
+                    handleExecutionReport(fixMessage);
                 }
             }
         } catch (IOException e) {
@@ -48,8 +49,6 @@ public class ReadClientThread extends Thread {
 
         bidAskPanel.removeAllBids();
         bidAskPanel.removeAllAsks();
-        List<PanelOrder> bids = new ArrayList<>();
-        List<PanelOrder> asks = new ArrayList<>();
         for (MarketDataEntry marketDataEntry : fixBody.marketDataEntries) {
             PanelOrder panelOrder = new PanelOrder(marketDataEntry.getMdEntryPositionNo(),
                     marketDataEntry.getPrice(), marketDataEntry.getQuantity());
@@ -59,12 +58,17 @@ public class ReadClientThread extends Thread {
                 bidAskPanel.addAsk(panelOrder);
             }
         }
-        /*
-        bids.sort(Comparator.comparingInt(PanelOrder::id));
-        asks.sort(Comparator.comparingInt(PanelOrder::id));
-        for (PanelOrder panelOrder : bids)
-            bidAskPanel.addBid(panelOrder);
-        for (PanelOrder panelOrder : bids)
-            bidAskPanel.addAsk(panelOrder);*/
+    }
+
+    private void handleExecutionReport(FixMessage fixMessage) {
+        FixBodyExecutionReport fixBodyExecutionReport = FixBodyExecutionReport.fromString(fixMessage.body().toString());
+        if (fixBodyExecutionReport.execType == ExecType.NEW) {
+            // Order confirmation
+            int clientOrderId = Integer.parseInt(fixBodyExecutionReport.origClientOrderID);
+            int orderId = Integer.parseInt(fixBodyExecutionReport.orderID);
+            userOrdersPanel.confirmOrder(clientOrderId, orderId);
+        } else {
+            throw new IllegalArgumentException("Not implemented execType for execution report");
+        }
     }
 }

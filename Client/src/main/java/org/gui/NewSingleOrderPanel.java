@@ -92,18 +92,15 @@ public class NewSingleOrderPanel extends JPanel implements TimerObserver {
             boolean isBuy = buyButton.isSelected();
 
             Order order = new Order(symbol, (float) price, quantity, (isBuy) ? Side.BUY : Side.SELL);
-            if (fixEngine.sendNewSingleOrderLimit(order)) {
-                userOrdersPanel.addOrder(order);
+            fixEngine.sendNewSingleOrderLimit(order);
+            userOrdersPanel.addOrder(order);
 
-                JOptionPane.showMessageDialog(frame, "Order submitted successfully", "Information", JOptionPane.INFORMATION_MESSAGE);
+            JOptionPane.showMessageDialog(frame, "Order submitted", "Information", JOptionPane.INFORMATION_MESSAGE);
 
-                // Reset the buttons, spinners and to their default state
-                quantitySpinner.setValue(1);
-                priceSpinner.setValue(0.01);
-                buttonGroup.clearSelection();
-            } else {
-                JOptionPane.showMessageDialog(frame, "Order submit failed", "Information", JOptionPane.INFORMATION_MESSAGE);
-            }
+            // Reset the buttons, spinners and to their default state
+            quantitySpinner.setValue(1);
+            priceSpinner.setValue(0.01);
+            buttonGroup.clearSelection();
         });
         submitPanel.add(submitButton);
         this.add(submitPanel);

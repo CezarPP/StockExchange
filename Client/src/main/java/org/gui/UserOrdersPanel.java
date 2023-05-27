@@ -16,7 +16,7 @@ public class UserOrdersPanel extends JPanel {
         setBorder(BorderFactory.createTitledBorder("User Orders"));
 
         // User Orders table
-        String[] ordersColumnNames = {"Order ID", "Symbol", "Price", "Quantity", "Side"};
+        String[] ordersColumnNames = {"Order ID", "Client order ID", "Symbol", "Price", "Quantity", "Side", "Confirmed"};
         ordersTableModel = new DefaultTableModel(ordersColumnNames, 0);
         JTable ordersTable = new JTable(ordersTableModel);
         JScrollPane ordersScrollPane = new JScrollPane(ordersTable);
@@ -24,8 +24,8 @@ public class UserOrdersPanel extends JPanel {
     }
 
     public void addOrder(Order order) {
-        Object[] rowData = {order.exchangeOrderID, order.symbol,
-                order.price, order.quantity, (order.side == Side.BUY) ? "BID" : "ASK"};
+        Object[] rowData = {order.exchangeOrderID, order.clientOrderID, order.symbol,
+                order.price, order.quantity, (order.side == Side.BUY) ? "BID" : "ASK", "Not confirmed"};
         ordersTableModel.addRow(rowData);
     }
 
@@ -38,6 +38,22 @@ public class UserOrdersPanel extends JPanel {
         return -1;
     }
 
+    private int findRowByClientOrderId(int clientOrderId) {
+        for (int i = 0; i < ordersTableModel.getRowCount(); i++) {
+            if ((int) ordersTableModel.getValueAt(i, 1) == clientOrderId) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+    public void confirmOrder(int clientOrderId, int orderId) {
+        int row = findRowByClientOrderId(clientOrderId);
+        if (row != -1) {
+            ordersTableModel.setValueAt("Confirmed", row, 6);
+            ordersTableModel.setValueAt(orderId, row, 0);
+        }
+    }
 
     public void removeOrder(int orderId) {
         int row = findRowByOrderId(orderId);
@@ -49,12 +65,12 @@ public class UserOrdersPanel extends JPanel {
     public void decreaseQuantity(int orderId, int quantity) {
         int row = findRowByOrderId(orderId);
         if (row != -1) {
-            int currentQuantity = (int) ordersTableModel.getValueAt(row, 2);
+            int currentQuantity = (int) ordersTableModel.getValueAt(row, 4);
             int newQuantity = currentQuantity - quantity;
             if (newQuantity <= 0) {
                 ordersTableModel.removeRow(row);
             } else {
-                ordersTableModel.setValueAt(newQuantity, row, 2);
+                ordersTableModel.setValueAt(newQuantity, row, 4);
             }
         }
     }
