@@ -9,9 +9,10 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 public class LimitTest {
     @Test
     void simpleLimitTest() {
+        final int portId = 1;
         Limit limit = new Limit(12, Side.BUY);
-        Order order1 = new Order(1, Symbol.BA, 12, 100, Side.BUY);
-        Order order2 = new Order(2, Symbol.BA, 12, 50, Side.BUY);
+        Order order1 = new Order(1, portId, Symbol.BA, 12, 100, Side.BUY);
+        Order order2 = new Order(2, portId, Symbol.BA, 12, 50, Side.BUY);
         limit.addOrder(order1);
         limit.addOrder(order2);
         assertEquals(limit.getFirstOrder().getParentLimit(), limit);

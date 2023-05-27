@@ -29,19 +29,18 @@ public class Port extends Thread {
     // orderId -> Order
     Map<Integer, Order> ordersMap;
 
-    synchronized static int getNewClientId() {
+    synchronized public static int getNewClientId() {
         staticClientId++;
         return staticClientId;
     }
 
-    public Port(Socket socket) {
+    public Port(Socket socket, int clientId) {
         this.ordersMap = new TreeMap<>();
+        this.clientId = clientId;
         try {
-            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
             this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
             fixEnginePort = new FixEnginePort(this.in, out);
-
-            clientId = getNewClientId();
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
@@ -73,21 +72,18 @@ public class Port extends Thread {
         OrderBook orderBook = OrderBookFactory.getOrderBook(symbol);
         int qty = fixBodyOrder.orderQuantity;
         float price = fixBodyOrder.price;
-        Order order = new Order(1, symbol, price, qty,
+        Order order = new Order(1, Integer.parseInt(fixBodyOrder.clientOrderID), clientId, symbol, price, qty,
                 fixBodyOrder.side, false);
         int orderId = orderBook.addToQueue(order);
         ordersMap.put(orderId, order);
-
-
-        // TODO(return orderId to client)
     }
 
     private void handleOrderCancel(FixMessage fixMessage) {
         FixBodyCancel fixBodyOrder = FixBodyCancel.fromString(fixMessage.body().toString());
         Symbol symbol = fixBodyOrder.symbol;
         OrderBook orderBook = OrderBookFactory.getOrderBook(symbol);
-        Order order = new Order(Integer.parseInt(fixBodyOrder.orderID), fixBodyOrder.symbol, 0,
-                fixBodyOrder.orderQuantity, fixBodyOrder.side, true);
+        Order order = new Order(Integer.parseInt(fixBodyOrder.orderID), Integer.parseInt(fixBodyOrder.clientOrderID),
+                clientId, fixBodyOrder.symbol, 0, fixBodyOrder.orderQuantity, fixBodyOrder.side, true);
         orderBook.addToQueue(order);
     }
 }

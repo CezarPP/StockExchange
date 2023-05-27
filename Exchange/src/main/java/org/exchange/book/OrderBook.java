@@ -2,6 +2,7 @@ package org.exchange.book;
 
 import org.common.fix.order.Side;
 import org.common.symbols.Symbol;
+import org.exchange.ports.SimpleServer;
 
 import java.io.IOException;
 import java.net.DatagramPacket;
@@ -63,6 +64,10 @@ public class OrderBook extends Thread implements OrderBookInterface {
         } else {
             addNewSingleOrderToMap(order, askLimits, Side.SELL);
         }
+        SimpleServer
+                .getPortForClient(order.getClientId())
+                .fixEnginePort
+                .sendOrderReceiveConfirmation(order, ++execId);
     }
 
     @Override

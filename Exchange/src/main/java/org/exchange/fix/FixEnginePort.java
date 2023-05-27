@@ -2,10 +2,7 @@ package org.exchange.fix;
 
 import org.common.fix.FixMessage;
 import org.common.fix.FixTrailer;
-import org.common.fix.body.FixBodyExecutionReport;
-import org.common.fix.body.FixBodyMarketData;
-import org.common.fix.body.FixBodyOrder;
-import org.common.fix.body.FixBodyRequest;
+import org.common.fix.body.*;
 import org.common.fix.header.BeginString;
 import org.common.fix.header.FixHeader;
 import org.common.fix.header.MessageType;
@@ -36,8 +33,6 @@ public class FixEnginePort {
     }
 
     public void sendMarketData(FixMessage fixMessage) {
-        crtSeqNr++;
-
         FixBodyRequest fixBodyRequest = FixBodyRequest.fromString(fixMessage.body().toString());
         Symbol symbol = Symbol.fromValue(fixBodyRequest.symbols.get(0));
         OrderBook orderBook = OrderBookFactory.getOrderBook(symbol);
@@ -59,20 +54,32 @@ public class FixEnginePort {
 
         FixBodyMarketData fixBodyMarketData = new FixBodyMarketData(symbol.getSymbol(),
                 marketDataEntryList.size(), marketDataEntryList);
-        FixHeader fixHeader = new FixHeader(BeginString.Fix_4_4, fixBodyMarketData.toString().length(),
-                MessageType.MarketDataSnapshotFullRefresh, "Cezar SRL",
-                "Exchange SRL", crtSeqNr, OffsetDateTime.now());
-        send(new FixMessage(fixHeader, fixBodyMarketData, FixTrailer.getTrailer(fixHeader, fixBodyMarketData)));
+        sendBody(fixBodyMarketData, MessageType.MarketDataSnapshotFullRefresh);
     }
 
-    public void sendOrderReceiveConfirmation(FixBodyOrder fixBodyOrder, Order order, int execId) {
+    public void sendOrderReceiveConfirmation(Order order, int execId) {
         FixBodyExecutionReport fixBodyExecutionReport =
-                new FixBodyExecutionReport(Integer.toString(order.getId()), fixBodyOrder.clientOrderID,
+                new FixBodyExecutionReport(Integer.toString(order.getId()), Integer.toString(order.getClientOderId()),
                         Integer.toString(execId), ExecType.NEW, OrderStatus.NEW, order.getSymbol(),
                         order.getSide(), order.getPrice(), order.getQuantity(), 0, 0);
-        FixHeader fixHeader = new FixHeader(BeginString.Fix_4_4, fixBodyExecutionReport.toString().length(),
-                MessageType.ExecutionReport, "Exchange SRL", "Cezar SRL", crtSeqNr, OffsetDateTime.now());
-        send(new FixMessage(fixHeader, fixBodyExecutionReport, FixTrailer.getTrailer(fixHeader, fixBodyExecutionReport)));
+        sendBody(fixBodyExecutionReport, MessageType.ExecutionReport);
+    }
+
+    // Basically fill or partial fill
+    public void sendOrderTrade(Order order, int execId, OrderStatus orderStatus) {
+        FixBodyExecutionReport fixBodyExecutionReport =
+                new FixBodyExecutionReport(Integer.toString(order.getId()), "clOrderId",
+                        Integer.toString(execId), ExecType.TRADE, orderStatus, order.getSymbol(),
+                        order.getSide(), order.getPrice(), order.getQuantity(), 0, 0);
+        sendBody(fixBodyExecutionReport, MessageType.ExecutionReport);
+    }
+
+    private void sendBody(FixBody fixBody, MessageType messageType) {
+        ++crtSeqNr;
+        FixHeader fixHeader = new FixHeader(BeginString.Fix_4_4, fixBody.toString().length(),
+                messageType, "Exchange SRL",
+                "Cezar SRL", crtSeqNr, OffsetDateTime.now());
+        send(new FixMessage(fixHeader, fixBody, FixTrailer.getTrailer(fixHeader, fixBody)));
     }
 
     private void send(FixMessage fixMessage) {
