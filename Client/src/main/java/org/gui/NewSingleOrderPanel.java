@@ -57,17 +57,47 @@ public class NewSingleOrderPanel extends JPanel implements TimerObserver {
         buySellPanel.add(sellButton);
         this.add(buySellPanel);
 
+        // Cancel button
+        JButton cancelButton = new JButton("Cancel");
+        cancelButton.addActionListener(e -> {
+            String orderIdStr = JOptionPane.showInputDialog("Enter the order ID to cancel:");
+            if (orderIdStr != null) {
+                try {
+                    int orderId = Integer.parseInt(orderIdStr);
+                    boolean isCancelled = true; // TODO
+                    if (isCancelled) {
+                        JOptionPane.showMessageDialog(null, "Order " + orderId + " has been cancelled.");
+                    } else {
+                        JOptionPane.showMessageDialog(null, "Failed to cancel Order " + orderId + ".");
+                    }
+                } catch (NumberFormatException ex) {
+                    JOptionPane.showMessageDialog(null, "Invalid order ID entered.");
+                }
+            }
+        });
+        buySellPanel.add(cancelButton);
+        this.add(buySellPanel);
+
+
         // Submit button
         JPanel submitPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JButton submitButton = new JButton("Submit");
         submitButton.addActionListener(e -> {
             Symbol symbol = (Symbol) stockDropdown.getSelectedItem();
             int quantity = (Integer) quantitySpinner.getValue();
+            // Making it float from the start causes an error
             double price = (Double) priceSpinner.getValue();
             boolean isBuy = buyButton.isSelected();
 
             Order order = new Order(symbol, (float) price, quantity, (isBuy) ? Side.BUY : Side.SELL);
             fixEngine.sendNewSingleOrderLimit(order);
+
+            JOptionPane.showMessageDialog(frame, "Order submitted successfully", "Information", JOptionPane.INFORMATION_MESSAGE);
+
+            // Reset the buttons, spinners and to their default state
+            quantitySpinner.setValue(1);
+            priceSpinner.setValue(0.01);
+            buttonGroup.clearSelection();
         });
         submitPanel.add(submitButton);
         this.add(submitPanel);
