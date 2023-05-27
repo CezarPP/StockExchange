@@ -1,19 +1,33 @@
 package org.gui;
 
+import org.client.FixEngineClient;
+import org.client.Order;
+import org.client.RequestTimer;
+import org.client.TimerObserver;
+import org.common.fix.order.Side;
 import org.common.symbols.Symbol;
 
 import javax.swing.*;
 import java.awt.*;
 
-public class NewSingleOrderPanel extends JPanel {
+public class NewSingleOrderPanel extends JPanel implements TimerObserver {
+    final JComboBox<Symbol> stockDropdown;
+    final StockExchangeClientFrame frame;
+    final FixEngineClient fixEngine;
 
-    public NewSingleOrderPanel() {
+    RequestTimer requestTimer;
+
+    public NewSingleOrderPanel(StockExchangeClientFrame frame, FixEngineClient fixEngine) {
+        this.frame = frame;
+        this.fixEngine = fixEngine;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
         setBorder(BorderFactory.createTitledBorder("New Single Order"));
 
         // Stock dropdown
-        JComboBox<Symbol> stockDropdown = new JComboBox<>(Symbol.values());
-        add(stockDropdown);
+        stockDropdown = new JComboBox<>(Symbol.values());
+        this.add(stockDropdown);
+        stockDropdown.addActionListener(e -> changeStock());
+        changeStock();
 
         // Quantity label input and label
         JPanel quantityPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -21,7 +35,7 @@ public class NewSingleOrderPanel extends JPanel {
         JSpinner quantitySpinner = new JSpinner(new SpinnerNumberModel(1, 1, Integer.MAX_VALUE, 1));
         quantityPanel.add(quantityLabel);
         quantityPanel.add(quantitySpinner);
-        add(quantityPanel);
+        this.add(quantityPanel);
 
         // Price label and input
         JPanel pricePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -30,7 +44,7 @@ public class NewSingleOrderPanel extends JPanel {
         priceSpinner.setEditor(new JSpinner.NumberEditor(priceSpinner, "0.00"));
         pricePanel.add(priceLabel);
         pricePanel.add(priceSpinner);
-        add(pricePanel);
+        this.add(pricePanel);
 
         // Buy and sell buttons
         JPanel buySellPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
@@ -41,12 +55,40 @@ public class NewSingleOrderPanel extends JPanel {
         buttonGroup.add(sellButton);
         buySellPanel.add(buyButton);
         buySellPanel.add(sellButton);
-        add(buySellPanel);
+        this.add(buySellPanel);
 
         // Submit button
         JPanel submitPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JButton submitButton = new JButton("Submit");
+        submitButton.addActionListener(e -> {
+            Symbol symbol = (Symbol) stockDropdown.getSelectedItem();
+            int quantity = (Integer) quantitySpinner.getValue();
+            double price = (Double) priceSpinner.getValue();
+            boolean isBuy = buyButton.isSelected();
+
+            Order order = new Order(symbol, (float) price, quantity, (isBuy) ? Side.BUY : Side.SELL);
+            fixEngine.sendNewSingleOrderLimit(order);
+        });
         submitPanel.add(submitButton);
-        add(submitPanel);
+        this.add(submitPanel);
+
+        requestTimer = new RequestTimer(this);
+        requestTimer.start();
+    }
+
+    Symbol getStock() {
+        return (Symbol) stockDropdown.getSelectedItem();
+    }
+
+    void changeStock() {
+        Symbol symbol = this.getStock();
+        frame.setBidAskPanel(symbol);
+        fixEngine.requestMarketDataForSymbol(symbol);
+    }
+
+    @Override
+    public void requestMarketData() {
+        Symbol symbol = getStock();
+        this.fixEngine.requestMarketDataForSymbol(symbol);
     }
 }

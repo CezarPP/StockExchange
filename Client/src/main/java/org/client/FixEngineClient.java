@@ -1,27 +1,33 @@
 package org.client;
 
-import org.common.fix.*;
+import org.common.fix.FixMessage;
+import org.common.fix.FixTrailer;
 import org.common.fix.body.*;
 import org.common.fix.header.BeginString;
 import org.common.fix.header.FixHeader;
 import org.common.fix.header.MessageType;
 import org.common.fix.login.EncryptMethod;
-import org.common.fix.order.OrderType;
-import org.common.fix.order.PriceType;
-import org.common.fix.order.Side;
 import org.common.fix.market_data.MarketDataEntryType;
 import org.common.fix.market_data.SubscriptionRequestType;
+import org.common.fix.order.OrderType;
+import org.common.fix.order.PriceType;
 import org.common.symbols.Symbol;
+import org.gui.StockExchangeClientFrame;
 
 import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintWriter;
+import java.net.Socket;
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 
 public class FixEngineClient {
+    private static final String SERVER_ADDRESS = "127.0.0.1";
+    private static final int PORT = 8100;
+
     final String clientOrderID = "Cezar";
     final String senderCompID = "Cezar SRL";
     final String targetCompID = "Exchange SRL";
@@ -29,21 +35,24 @@ public class FixEngineClient {
     final static int marketDepth = 20;
     int crtSeqNr = 0;
     int reqID = 0;
-
     Map<String, Order> ordersSent;
+    private BufferedReader in;
+    private PrintWriter out;
 
-    private final BufferedReader in;
-    private final PrintWriter out;
-
-    FixEngineClient(BufferedReader in, PrintWriter out) {
-        this.in = in;
-        this.out = out;
-    }
-
-    public void start() {
-        sendLogin();
-        waitLoginResponse();
-        // TODO(start read write threads)
+    FixEngineClient(StockExchangeClientFrame frame) {
+        try {
+            Socket socket = new Socket(SERVER_ADDRESS, PORT);
+            PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+            BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+            this.in = in;
+            this.out = out;
+            //sendLogin();
+            //waitLoginResponse();
+            new ReadClientThread(in, frame).start();
+        } catch (Exception e) {
+            System.err.println(e.getMessage());
+            System.exit(-1);
+        }
     }
 
     public void sendNewSingleOrderLimit(Order order) {
@@ -59,7 +68,7 @@ public class FixEngineClient {
                         senderCompID, targetCompID, crtSeqNr, OffsetDateTime.now());
 
         send(new FixMessage(fixHeader, fixBody, FixTrailer.getTrailer(fixHeader, fixBody)));
-        waitOrderResponse(order);
+        // waitOrderResponse(order);
     }
 
     public void sendCancelOrder(String orderID) {
@@ -134,6 +143,7 @@ public class FixEngineClient {
     }
 
     private void send(FixMessage fixMessage) {
+        System.out.println("Client sending fix message " + fixMessage);
         out.println(fixMessage);
         out.flush();
     }

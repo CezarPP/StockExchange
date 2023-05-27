@@ -1,21 +1,31 @@
 package org.gui;
 
+import org.client.FixEngineClient;
+import org.common.symbols.Symbol;
+
 import javax.swing.*;
 import java.awt.*;
 
 public class StockExchangeClientFrame extends JFrame {
+    private BidAskPanel bidAskPanel = null;
 
     public StockExchangeClientFrame() {
         setTitle("Stock Exchange Client");
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setSize(1280, 720);
         setLayout(new BorderLayout());
+    }
 
-        add(new NewSingleOrderPanel(), BorderLayout.NORTH);
-        BidAskPanel bidAskPanel = new BidAskPanel();
-        bidAskPanel.addBid(1, 123.0, 3123);
-        bidAskPanel.addAsk(2, 130.0, 2313);
-        add(bidAskPanel, BorderLayout.CENTER);
+    public BidAskPanel getBidAskPanel() {
+        return bidAskPanel;
+    }
 
+    public void setBidAskPanel(Symbol symbol) {
+        if (this.bidAskPanel != null)
+            this.remove(this.bidAskPanel);
+        BidAskPanel bidAskPanel = new BidAskPanel(symbol);
+        this.bidAskPanel = bidAskPanel;
+        this.add(bidAskPanel, BorderLayout.CENTER);
+        this.setVisible(true);
     }
 }

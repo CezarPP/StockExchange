@@ -30,7 +30,7 @@ public class ReadClientThread extends Thread {
         try {
             String response;
             while ((response = in.readLine()) != null) {
-                System.out.println(response);
+                System.out.println("Client received message " + response);
                 FixMessage fixMessage = FixMessage.fromString(response);
                 if (fixMessage.header().messageType == MessageType.MarketDataSnapshotFullRefresh) {
                     addMarketDataToPanel(fixMessage, frame.getBidAskPanel());
@@ -44,13 +44,7 @@ public class ReadClientThread extends Thread {
     private void addMarketDataToPanel(FixMessage fixMessage, BidAskPanel bidAskPanel) {
         bidAskPanel.removeAllAsks();
         bidAskPanel.removeAllBids();
-        FixBodyMarketData fixBody = null;
-        if (fixMessage.body() instanceof FixBodyMarketData) {
-            fixBody = FixBodyMarketData.fromString(fixMessage.body().toString());
-        } else {
-            System.out.println("Malformed market data");
-            System.exit(-1);
-        }
+        FixBodyMarketData fixBody = FixBodyMarketData.fromString(fixMessage.body().toString());
 
         bidAskPanel.removeAllBids();
         bidAskPanel.removeAllAsks();
@@ -60,16 +54,17 @@ public class ReadClientThread extends Thread {
             PanelOrder panelOrder = new PanelOrder(marketDataEntry.getMdEntryPositionNo(),
                     marketDataEntry.getPrice(), marketDataEntry.getQuantity());
             if (marketDataEntry.getMarketDataEntryType() == MarketDataEntryType.BID) {
-                bids.add(panelOrder);
+                bidAskPanel.addBid(panelOrder);
             } else {
-                asks.add(panelOrder);
+                bidAskPanel.addAsk(panelOrder);
             }
         }
+        /*
         bids.sort(Comparator.comparingInt(PanelOrder::id));
         asks.sort(Comparator.comparingInt(PanelOrder::id));
         for (PanelOrder panelOrder : bids)
             bidAskPanel.addBid(panelOrder);
         for (PanelOrder panelOrder : bids)
-            bidAskPanel.addAsk(panelOrder);
+            bidAskPanel.addAsk(panelOrder);*/
     }
 }

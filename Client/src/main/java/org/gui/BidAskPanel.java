@@ -1,16 +1,23 @@
 package org.gui;
 
+import org.common.symbols.Symbol;
+
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
 import java.util.Comparator;
 import java.util.Vector;
 
+/**
+ * There should be one panel for each stock
+ */
 public class BidAskPanel extends JPanel {
     private final DefaultTableModel bidTableModel;
     private final DefaultTableModel askTableModel;
+    public Symbol symbol;
 
-    public BidAskPanel() {
+    public BidAskPanel(Symbol symbol) {
+        this.symbol = symbol;
         setLayout(new GridLayout(1, 2));
         setBorder(BorderFactory.createTitledBorder("Bid / Ask"));
 
@@ -28,13 +35,13 @@ public class BidAskPanel extends JPanel {
         add(askScrollPane);
     }
 
-    public void addBid(int id, double price, int quantity) {
-        addOrUpdate(bidTableModel, id, price, quantity);
+    public void addBid(PanelOrder panelOrder) {
+        addOrUpdate(bidTableModel, panelOrder.id(), panelOrder.price(), panelOrder.quantity());
         sortTable(bidTableModel, (o1, o2) -> Double.compare((double) ((Vector<?>) o2).get(1), (double) ((Vector<?>) o1).get(1)));
     }
 
-    public void addAsk(int id, double price, int quantity) {
-        addOrUpdate(askTableModel, id, price, quantity);
+    public void addAsk(PanelOrder panelOrder) {
+        addOrUpdate(askTableModel, panelOrder.id(), panelOrder.price(), panelOrder.quantity());
         sortTable(askTableModel, Comparator.comparingDouble(o -> (double) ((Vector<?>) o).get(1)));
     }
 
@@ -52,5 +59,13 @@ public class BidAskPanel extends JPanel {
     private void sortTable(DefaultTableModel tableModel, Comparator<Object> comparator) {
         tableModel.getDataVector().sort(comparator);
         tableModel.fireTableDataChanged();
+    }
+
+    public void removeAllBids() {
+        bidTableModel.setRowCount(0);
+    }
+
+    public void removeAllAsks() {
+        askTableModel.setRowCount(0);
     }
 }
