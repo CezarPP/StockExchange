@@ -55,7 +55,11 @@ public class FixEngineClient {
         }
     }
 
-    public void sendNewSingleOrderLimit(Order order) {
+    /**
+     * @param order -> order
+     * @return -> True sending the order was successful
+     */
+    public boolean sendNewSingleOrderLimit(Order order) {
         crtSeqNr++;
 
         FixBodyOrder fixBody =
@@ -68,7 +72,8 @@ public class FixEngineClient {
                         senderCompID, targetCompID, crtSeqNr, OffsetDateTime.now());
 
         send(new FixMessage(fixHeader, fixBody, FixTrailer.getTrailer(fixHeader, fixBody)));
-        // waitOrderResponse(order);
+        // waitOrderResponse(order); // TODO(get exchange order id)
+        return true;
     }
 
     public void sendCancelOrder(String orderID) {

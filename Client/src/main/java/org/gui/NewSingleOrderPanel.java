@@ -15,9 +15,11 @@ public class NewSingleOrderPanel extends JPanel implements TimerObserver {
     final StockExchangeClientFrame frame;
     final FixEngineClient fixEngine;
 
+    final UserOrdersPanel userOrdersPanel;
     RequestTimer requestTimer;
 
     public NewSingleOrderPanel(StockExchangeClientFrame frame, FixEngineClient fixEngine) {
+        this.userOrdersPanel = UserOrdersPanelFactory.getUserOrdersPanel();
         this.frame = frame;
         this.fixEngine = fixEngine;
         setLayout(new BoxLayout(this, BoxLayout.Y_AXIS));
@@ -90,14 +92,18 @@ public class NewSingleOrderPanel extends JPanel implements TimerObserver {
             boolean isBuy = buyButton.isSelected();
 
             Order order = new Order(symbol, (float) price, quantity, (isBuy) ? Side.BUY : Side.SELL);
-            fixEngine.sendNewSingleOrderLimit(order);
+            if (fixEngine.sendNewSingleOrderLimit(order)) {
+                userOrdersPanel.addOrder(order);
 
-            JOptionPane.showMessageDialog(frame, "Order submitted successfully", "Information", JOptionPane.INFORMATION_MESSAGE);
+                JOptionPane.showMessageDialog(frame, "Order submitted successfully", "Information", JOptionPane.INFORMATION_MESSAGE);
 
-            // Reset the buttons, spinners and to their default state
-            quantitySpinner.setValue(1);
-            priceSpinner.setValue(0.01);
-            buttonGroup.clearSelection();
+                // Reset the buttons, spinners and to their default state
+                quantitySpinner.setValue(1);
+                priceSpinner.setValue(0.01);
+                buttonGroup.clearSelection();
+            } else {
+                JOptionPane.showMessageDialog(frame, "Order submit failed", "Information", JOptionPane.INFORMATION_MESSAGE);
+            }
         });
         submitPanel.add(submitButton);
         this.add(submitPanel);

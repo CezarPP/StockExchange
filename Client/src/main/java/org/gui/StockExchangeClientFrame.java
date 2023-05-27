@@ -19,7 +19,7 @@ public class StockExchangeClientFrame extends JFrame {
         setSize(1280, 720);
         setLayout(new BorderLayout());
 
-        userOrdersPanel = new UserOrdersPanel();
+        userOrdersPanel = UserOrdersPanelFactory.getUserOrdersPanel();
     }
 
     public BidAskPanel getBidAskPanel() {

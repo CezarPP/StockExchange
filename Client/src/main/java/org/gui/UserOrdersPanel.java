@@ -1,5 +1,7 @@
 package org.gui;
 
+import org.client.Order;
+import org.common.fix.order.Side;
 import org.common.symbols.Symbol;
 
 import javax.swing.*;
@@ -21,9 +23,40 @@ public class UserOrdersPanel extends JPanel {
         add(ordersScrollPane);
     }
 
-    public void addOrder(int orderId, Symbol symbol, double price, int quantity, String side) {
-        Object[] rowData = {orderId, symbol, price, quantity, side};
+    public void addOrder(Order order) {
+        Object[] rowData = {order.exchangeOrderID, order.symbol,
+                order.price, order.quantity, (order.side == Side.BUY) ? "BID" : "ASK"};
         ordersTableModel.addRow(rowData);
+    }
+
+    private int findRowByOrderId(int orderId) {
+        for (int i = 0; i < ordersTableModel.getRowCount(); i++) {
+            if ((int) ordersTableModel.getValueAt(i, 0) == orderId) {
+                return i;
+            }
+        }
+        return -1;
+    }
+
+
+    public void removeOrder(int orderId) {
+        int row = findRowByOrderId(orderId);
+        if (row != -1) {
+            ordersTableModel.removeRow(row);
+        }
+    }
+
+    public void decreaseQuantity(int orderId, int quantity) {
+        int row = findRowByOrderId(orderId);
+        if (row != -1) {
+            int currentQuantity = (int) ordersTableModel.getValueAt(row, 2);
+            int newQuantity = currentQuantity - quantity;
+            if (newQuantity <= 0) {
+                ordersTableModel.removeRow(row);
+            } else {
+                ordersTableModel.setValueAt(newQuantity, row, 2);
+            }
+        }
     }
 }
 
