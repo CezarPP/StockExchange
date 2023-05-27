@@ -33,4 +33,9 @@ public enum ExecType {
         }
         throw new IllegalArgumentException("Unknown ExecType value: " + value);
     }
+
+    @Override
+    public String toString() {
+        return Character.toString(label);
+    }
 }

@@ -61,4 +61,9 @@ public enum MessageType {
         }
         throw new IllegalArgumentException("Unknown MessageType: " + value);
     }
+
+    @Override
+    public String toString() {
+        return this.label;
+    }
 }

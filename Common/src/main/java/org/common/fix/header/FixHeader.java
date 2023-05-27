@@ -9,6 +9,7 @@ import java.time.format.DateTimeFormatter;
  * All fields are required
  */
 public class FixHeader {
+    final static String dateTimePattern = "uuuu-MM-dd-HH:mm:ssXXX";
 
     /**
      * 8 -> BeginString -> FIX.4.4 -> Always unencrypted, must be first field in message
@@ -42,7 +43,7 @@ public class FixHeader {
     OffsetDateTime sendingTime;
 
     private String formattedSendingTime() {
-        return sendingTime.format(DateTimeFormatter.ofPattern("uuuuMMdd-HH:mm:ss"));
+        return sendingTime.format(DateTimeFormatter.ofPattern(dateTimePattern));
     }
 
     public FixHeader(BeginString beginString, int bodyLength, MessageType messageType, String senderCompID,
@@ -90,8 +91,9 @@ public class FixHeader {
                 case "49" -> senderCompID = value;
                 case "56" -> targetCompID = value;
                 case "34" -> messageSeqNum = Integer.parseInt(value);
-                case "52" ->
-                        sendingTime = OffsetDateTime.parse(value, DateTimeFormatter.ofPattern("uuuuMMdd-HH:mm:ss"));
+                case "52" -> {
+                    sendingTime = OffsetDateTime.parse(value, DateTimeFormatter.ofPattern(dateTimePattern));
+                }
                 default -> throw new IllegalArgumentException("Unknown field in header: " + key);
             }
         }

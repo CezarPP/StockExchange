@@ -10,13 +10,13 @@ public class FixBodyMarketData implements FixBody {
     /**
      * 55 -> Symbol
      */
-    String symbol;
+    public final String symbol;
     /**
      * 268 -> NoMDEntries -> Number of entries following
      */
-    int noMDEntries;
+    public final int noMDEntries;
 
-    List<MarketDataEntry> marketDataEntries;
+    public final List<MarketDataEntry> marketDataEntries;
 
     public FixBodyMarketData(String symbol, int noMDEntries, List<MarketDataEntry> marketDataEntries) {
         this.symbol = symbol;

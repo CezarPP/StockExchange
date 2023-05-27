@@ -18,4 +18,9 @@ public enum Side {
         }
         throw new IllegalArgumentException("Unknown Side value: " + value);
     }
+
+    @Override
+    public String toString() {
+        return Character.toString(label);
+    }
 }

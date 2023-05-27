@@ -6,37 +6,44 @@ public class MarketDataEntry {
     /**
      * 269 -> MDEntryType -> First field in the repeating group
      */
-    MarketDataEntryType marketDataEntryType;
+    private final MarketDataEntryType marketDataEntryType;
 
     /**
      * Conditionally required if MDEntryType <269> is not 'A'(Imbalance), 'B'(Trade Volume), or 'C'(Open Interest)
      * 270 -> MDEntryPx -> price
      */
-    float price;
+    private final float price;
 
     /**
      * Quantity or volume represented by the Market Data Entry.
      * 271 -> MDEntrySize -> Required if MDEntryType is Bid/Offer
      */
-    int mdEntrySize;
+    private final int quantity;
 
     /**
      * In an Aggregated Book, used to show how many individual orders make up an MDEntry
      * 346 -> NumberOfOrders
      */
-    int nrOrders;
+    private final int nrOrders;
 
     /**
      * Display position of a bid or offer, numbered from most competitive to least competitive, per market side, beginning with 1
      * 290 -> MDEntryPositionNo
      */
-    int mdEntryPositionNo;
+    private final int mdEntryPositionNo;
 
+    public MarketDataEntry(MarketDataEntryType marketDataEntryType, float price, int quantity, int nrOrders, int mdEntryPositionNo) {
+        this.marketDataEntryType = marketDataEntryType;
+        this.price = price;
+        this.quantity = quantity;
+        this.nrOrders = nrOrders;
+        this.mdEntryPositionNo = mdEntryPositionNo;
+    }
 
     private MarketDataEntry(Builder builder) {
         this.marketDataEntryType = builder.marketDataEntryType;
         this.price = builder.price;
-        this.mdEntrySize = builder.mdEntrySize;
+        this.quantity = builder.mdEntrySize;
         this.nrOrders = builder.nrOrders;
         this.mdEntryPositionNo = builder.mdEntryPositionNo;
     }
@@ -45,7 +52,7 @@ public class MarketDataEntry {
     public String toString() {
         return "269=" + marketDataEntryType.getValue() + FixMessage.delimiter +
                 "270=" + price + FixMessage.delimiter +
-                "271=" + mdEntrySize + FixMessage.delimiter +
+                "271=" + quantity + FixMessage.delimiter +
                 "346=" + nrOrders + FixMessage.delimiter +
                 "290=" + mdEntryPositionNo + FixMessage.delimiter;
     }
@@ -110,5 +117,25 @@ public class MarketDataEntry {
         public MarketDataEntry build() {
             return new MarketDataEntry(this);
         }
+    }
+
+    public MarketDataEntryType getMarketDataEntryType() {
+        return marketDataEntryType;
+    }
+
+    public float getPrice() {
+        return price;
+    }
+
+    public int getQuantity() {
+        return quantity;
+    }
+
+    public int getNrOrders() {
+        return nrOrders;
+    }
+
+    public int getMdEntryPositionNo() {
+        return mdEntryPositionNo;
     }
 }

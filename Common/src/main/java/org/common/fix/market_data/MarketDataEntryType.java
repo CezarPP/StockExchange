@@ -38,4 +38,8 @@ public enum MarketDataEntryType {
         throw new IllegalArgumentException("Invalid MarketDataEntryType value: " + value);
     }
 
+    @Override
+    public String toString() {
+        return Character.toString(value);
+    }
 }

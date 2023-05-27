@@ -33,4 +33,9 @@ public enum EncryptMethod {
         }
         throw new IllegalArgumentException("Invalid EncryptMethod value: " + value);
     }
+
+    @Override
+    public String toString() {
+        return Integer.toString(value);
+    }
 }

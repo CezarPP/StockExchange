@@ -25,7 +25,7 @@ public record FixTrailer(int checkSum) {
     }
 
     public static FixTrailer fromString(String str) {
-        String[] parts = str.split("=");
+        String[] parts = str.split(FixMessage.delimiter)[0].split("=");
         if (parts.length != 2 || !parts[0].equals("10")) {
             throw new IllegalArgumentException("Invalid FIX trailer: " + str);
         }

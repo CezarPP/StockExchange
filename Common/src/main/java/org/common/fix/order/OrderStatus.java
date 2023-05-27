@@ -31,4 +31,9 @@ public enum OrderStatus {
         }
         throw new IllegalArgumentException("Unknown OrderStatus value: " + value);
     }
+
+    @Override
+    public String toString() {
+        return Character.toString(label);
+    }
 }

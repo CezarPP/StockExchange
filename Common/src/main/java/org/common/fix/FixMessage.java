@@ -18,7 +18,7 @@ public record FixMessage(FixHeader header, FixBody body, FixTrailer trailer) {
         // Construct header
         StringBuilder headerStringBuilder = new StringBuilder();
         int i = 0;
-        while (!parts[i].startsWith("35")) { // Until we hit the message type field
+        while (!parts[i].startsWith("52")) { // Until we hit the sending time field
             headerStringBuilder.append(parts[i]).append(delimiter);
             i++;
         }

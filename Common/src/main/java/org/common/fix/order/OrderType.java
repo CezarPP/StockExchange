@@ -33,4 +33,9 @@ public enum OrderType {
         }
         throw new IllegalArgumentException("Unknown OrderType value: " + value);
     }
+
+    @Override
+    public String toString() {
+        return Character.toString(label);
+    }
 }

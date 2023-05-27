@@ -31,4 +31,9 @@ public enum PriceType {
         }
         throw new IllegalArgumentException("Unknown PriceType value: " + value);
     }
+
+    @Override
+    public String toString() {
+        return Integer.toString(value);
+    }
 }

@@ -27,4 +27,9 @@ public enum SubscriptionRequestType {
         }
         throw new IllegalArgumentException("Invalid SubscriptionRequestType value: " + value);
     }
+
+    @Override
+    public String toString() {
+        return Character.toString(value);
+    }
 }
