@@ -5,7 +5,7 @@ import java.util.List;
 public interface OrderBookInterface {
     void addNewSingleOrder(Order order);
 
-    void cancelOrder(int orderID);
+    void cancelOrder(Order cancelOrder);
 
     /**
      * @param order Order from fix

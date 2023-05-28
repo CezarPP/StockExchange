@@ -24,6 +24,7 @@ import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.TreeMap;
 
 public class FixEngineClient {
     private static final Random random = new Random();
@@ -34,10 +35,10 @@ public class FixEngineClient {
     final String username = "Cezar";
     final static int marketDepth = 20;
 
-    int clientOrderID = 0;
+    private int clientOrderID = 0;
     int crtSeqNr = 0;
     int reqID = 0;
-    Map<String, Order> ordersSent;
+    public Map<Integer, Order> ordersSent = new TreeMap<>();
     private BufferedReader in;
     private PrintWriter out;
 
@@ -52,16 +53,19 @@ public class FixEngineClient {
             this.out = out;
             sendLogin();
             waitLoginResponse();
-            new ReadClientThread(in, frame).start();
+            new ReadClientThread(in, frame, this).start();
         } catch (Exception e) {
             System.err.println(e.getMessage());
             System.exit(-1);
         }
     }
 
+    public synchronized int getNewClientOrderId() {
+        return ++clientOrderID;
+    }
+
     public void sendNewSingleOrderLimit(Order order) {
         crtSeqNr++;
-        clientOrderID++;
 
         FixBodyOrder fixBody =
                 new FixBodyOrder(Integer.toString(clientOrderID),
@@ -75,13 +79,13 @@ public class FixEngineClient {
         send(new FixMessage(fixHeader, fixBody, FixTrailer.getTrailer(fixHeader, fixBody)));
     }
 
-    public void sendCancelOrder(String orderID) {
+    public void sendCancelOrder(Order order) {
         crtSeqNr++;
-        Order order = ordersSent.get(orderID);
-        Order cancelOrder = new Order(order.symbol, order.price, order.quantity, order.side);
+
+        Order cancelOrder = new Order(getNewClientOrderId(), order.symbol, order.price, order.quantity, order.side);
         FixBodyCancel fixBody =
-                new FixBodyCancel(Integer.toString(order.clientOrderID), order.exchangeOrderID,
-                        Integer.toString(cancelOrder.clientOrderID), cancelOrder.symbol, cancelOrder.side,
+                new FixBodyCancel(Integer.toString(order.clientOrderId), Integer.toString(order.exchangeOrderID),
+                        Integer.toString(cancelOrder.clientOrderId), cancelOrder.symbol, cancelOrder.side,
                         OffsetDateTime.now(), cancelOrder.quantity);
 
         FixHeader fixHeader =

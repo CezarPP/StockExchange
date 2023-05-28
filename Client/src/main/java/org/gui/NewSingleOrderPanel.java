@@ -66,12 +66,13 @@ public class NewSingleOrderPanel extends JPanel implements TimerObserver {
             if (orderIdStr != null) {
                 try {
                     int orderId = Integer.parseInt(orderIdStr);
-                    boolean isCancelled = true; // TODO
-                    if (isCancelled) {
-                        JOptionPane.showMessageDialog(null, "Order " + orderId + " has been cancelled.");
-                    } else {
-                        JOptionPane.showMessageDialog(null, "Failed to cancel Order " + orderId + ".");
+                    Order order = fixEngine.ordersSent.get(orderId);
+                    if (order == null) {
+                        JOptionPane.showMessageDialog(null, "You have no outstanding orders with this id");
+                        return;
                     }
+                    fixEngine.sendCancelOrder(order);
+                    JOptionPane.showMessageDialog(null, "Cancel request has been sent");
                 } catch (NumberFormatException ex) {
                     JOptionPane.showMessageDialog(null, "Invalid order ID entered.");
                 }
@@ -91,9 +92,9 @@ public class NewSingleOrderPanel extends JPanel implements TimerObserver {
             double price = (Double) priceSpinner.getValue();
             boolean isBuy = buyButton.isSelected();
 
-            Order order = new Order(symbol, (float) price, quantity, (isBuy) ? Side.BUY : Side.SELL);
-            fixEngine.sendNewSingleOrderLimit(order);
+            Order order = new Order(fixEngine.getNewClientOrderId(), symbol, (float) price, quantity, (isBuy) ? Side.BUY : Side.SELL);
             userOrdersPanel.addOrder(order);
+            fixEngine.sendNewSingleOrderLimit(order);
 
             JOptionPane.showMessageDialog(frame, "Order submitted", "Information", JOptionPane.INFORMATION_MESSAGE);
 

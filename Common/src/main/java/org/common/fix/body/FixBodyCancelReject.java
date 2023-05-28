@@ -12,32 +12,32 @@ public class FixBodyCancelReject implements FixBody {
     /**
      * 37 -> OrderID -> If CxlRejReason <102>='Unknown order', specify 'NONE'.
      */
-    String orderId;
+    public String orderId;
 
     /**
      * 11 -> ClOrdID -> Unique order id assigned by institution to the cancel request or to the replacement order.
      */
-    String clOrderId;
+    public String clOrderId;
 
     /**
      * 41 -> OrigClOrdID -> ClOrdID <11> which could not be canceled/replaced.
      */
-    String origClientOrderId;
+    public String origClientOrderId;
 
     /**
      * 39 -> OrdStatus -> OrdStatus <39> value after this cancel reject is applied.
      */
-    OrderStatus orderStatus;
+    public OrderStatus orderStatus;
 
     /**
      * 434 -> CxlRejResponseTo -> Either Order Cancel Request <F> or Order Cancel/Replace Request <G>
      */
-    CxlRejResponseTo cxlRejResponseTo;
+    public CxlRejResponseTo cxlRejResponseTo;
 
     /**
      * 102 -> CxlRejReason -> Reason for rejecting the order
      */
-    CxlRejReason cxlRejReason;
+    public CxlRejReason cxlRejReason;
 
     public FixBodyCancelReject(String orderId, String clOrderId, String origClientOrderId, OrderStatus orderStatus, CxlRejResponseTo cxlRejResponseTo, CxlRejReason cxlRejReason) {
         this.orderId = orderId;

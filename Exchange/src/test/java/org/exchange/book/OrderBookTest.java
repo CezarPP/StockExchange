@@ -76,11 +76,11 @@ public class OrderBookTest {
         OrderBook orderBook = new OrderBook(Symbol.AAPL);
 
         Order buyOrder1 = new Order(1, 1, portId, Symbol.AAPL, 250, 50, Side.BUY);
-        Order butOrder2 = new Order(2, 2, portId, Symbol.AAPL, 200, 50, Side.BUY);
+        Order buyOrder2 = new Order(2, 2, portId, Symbol.AAPL, 200, 50, Side.BUY);
         orderBook.addNewSingleOrder(buyOrder1);
-        orderBook.addNewSingleOrder(butOrder2);
+        orderBook.addNewSingleOrder(buyOrder2);
 
-        orderBook.cancelOrder(1);
+        orderBook.cancelOrder(buyOrder1);
 
         assertEquals(orderBook.getFirstBuyLimit().getPrice(), 200);
 

@@ -74,8 +74,13 @@ public class OrderBook extends Thread implements OrderBookInterface {
     }
 
     @Override
-    public void cancelOrder(int orderID) {
-        LimitOrder order = orders.get(orderID);
+    public void cancelOrder(Order cancelOrder) {
+        LimitOrder order = orders.get(cancelOrder.getId());
+        if (order == null) {
+            BroadcastSender
+                    .sendOrderCancelReject(cancelOrder);
+            return;
+        }
         Limit parentLimit = order.getParentLimit();
         parentLimit.removeOrder(order);
         if (parentLimit.isEmpty()) {
@@ -84,7 +89,8 @@ public class OrderBook extends Thread implements OrderBookInterface {
             else
                 askLimits.remove(parentLimit.getPrice());
         }
-        // TODO(send client message)
+        BroadcastSender
+                .sendOrderCanceled(cancelOrder, ++execId);
     }
 
     @Override
@@ -197,7 +203,7 @@ public class OrderBook extends Thread implements OrderBookInterface {
                 Order order = queue.poll();
                 assert order != null;
                 if (order.isCancel()) {
-                    this.cancelOrder(order.getId());
+                    this.cancelOrder(order);
                 } else {
                     this.addNewSingleOrder(order);
                 }

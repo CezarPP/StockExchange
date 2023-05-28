@@ -23,7 +23,7 @@ public class UserOrdersPanel extends JPanel {
     }
 
     public void addOrder(Order order) {
-        Object[] rowData = {order.exchangeOrderID, order.clientOrderID, order.symbol,
+        Object[] rowData = {order.exchangeOrderID, order.clientOrderId, order.symbol,
                 order.price, order.quantity, (order.side == Side.BUY) ? "BID" : "ASK", "Not confirmed"};
         ordersTableModel.addRow(rowData);
     }

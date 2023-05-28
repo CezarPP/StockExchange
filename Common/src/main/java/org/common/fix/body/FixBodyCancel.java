@@ -14,18 +14,18 @@ import java.util.Map;
  */
 public class FixBodyCancel implements FixBody {
     /**
-     * 41 -> OrigClOrdID -> ClOrdID <11> of the previous order
+     * 41 -> OrigClOrdID -> ClOrdID <11> of the order to cancel
      */
     public String origClientOrderID;
 
     /**
-     * 37 -> OrderID -> Unique identifier of most recent order as assigned by sell-side (broker, exchange, ECN)
+     * 37 -> OrderID -> orderId of the order to cancel as assigned by the exchange
      */
 
     public String orderID;
 
     /**
-     * 11 -> Assigned by the institution
+     * 11 -> Unique ID of cancel request as assigned by the institution
      */
     public String clientOrderID;
 

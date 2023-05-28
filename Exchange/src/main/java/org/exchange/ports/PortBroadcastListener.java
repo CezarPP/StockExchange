@@ -34,10 +34,18 @@ public class PortBroadcastListener extends Thread {
                 FixMessage message = FixMessage.fromString(fixMessage);
                 if (!Objects.equals(message.header().targetCompID, clientCompId))
                     continue;
-                assert message.header().messageType == MessageType.ExecutionReport;
-                FixBodyExecutionReport report = FixBodyExecutionReport.fromString(message.body().toString());
-                // TODO(check execId)
-                // If execId is in order, forward message to client
+
+                MessageType messageType = message.header().messageType;
+                if(messageType == MessageType.ExecutionReport) {
+                    FixBodyExecutionReport report = FixBodyExecutionReport.fromString(message.body().toString());
+                    System.out.println("Fix port received exec report for orderId" + report.orderID);
+                    // TODO(check execId)
+                    // If execId is in order, forward message to client
+                } else if(messageType == MessageType.OrderCancelReject) {
+
+                } else {
+                    throw new IllegalArgumentException("Post broadcast listener found unknown message type" + messageType);
+                }
                 fixEnginePort.send(message);
             }
         } catch (Exception e) {
