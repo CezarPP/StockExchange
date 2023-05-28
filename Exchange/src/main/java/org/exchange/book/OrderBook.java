@@ -4,9 +4,6 @@ import org.common.fix.order.Side;
 import org.common.symbols.Symbol;
 import org.exchange.ports.SimpleServer;
 
-import java.io.IOException;
-import java.net.DatagramPacket;
-import java.net.DatagramSocket;
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -190,24 +187,6 @@ public class OrderBook extends Thread implements OrderBookInterface {
                 System.out.println("Error waiting for element in orderBook");
                 throw new RuntimeException(e);
             }
-        }
-    }
-
-    /**
-     * @param broadcastMessage -> execution report
-     */
-    public static void broadcast(String broadcastMessage) {
-        try {
-            DatagramSocket socket = new DatagramSocket();
-            socket.setBroadcast(true);
-
-            byte[] buffer = broadcastMessage.getBytes();
-
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length, null, 4445);
-            socket.send(packet);
-            socket.close();
-        } catch (IOException e) {
-            System.out.println(e.getMessage());
         }
     }
 }
