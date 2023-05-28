@@ -55,6 +55,8 @@ public record FixMessage(FixHeader header, FixBody body, FixTrailer trailer) {
             body = FixBodyCancel.fromString(bodyStringBuilder.toString());
         } else if (header.messageType == MessageType.Reject) {
             body = FixBodyReject.fromString(bodyStringBuilder.toString());
+        } else if (header.messageType == MessageType.OrderCancelReject) {
+            body = FixBodyCancelReject.fromString(bodyStringBuilder.toString());
         } else {
             throw new IllegalArgumentException("Unknown message type");
         }
