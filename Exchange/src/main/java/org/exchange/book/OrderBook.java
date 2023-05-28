@@ -2,7 +2,7 @@ package org.exchange.book;
 
 import org.common.fix.order.Side;
 import org.common.symbols.Symbol;
-import org.exchange.ports.SimpleServer;
+import org.exchange.broadcast.BroadcastSender;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentLinkedQueue;
@@ -61,9 +61,11 @@ public class OrderBook extends Thread implements OrderBookInterface {
         } else {
             addNewSingleOrderToMap(order, askLimits, Side.SELL);
         }
-        SimpleServer
+/*        SimpleServer
                 .getPortForClient(order.getClientId())
                 .fixEnginePort
+                .sendOrderReceiveConfirmation(order, ++execId);*/
+        BroadcastSender
                 .sendOrderReceiveConfirmation(order, ++execId);
     }
 

@@ -1,4 +1,4 @@
-package org.exchange.fix;
+package org.exchange.ports;
 
 import org.common.fix.FixMessage;
 import org.common.fix.FixTrailer;
@@ -23,13 +23,16 @@ import java.util.List;
  * A fix engine port for each client
  */
 public class FixEnginePort {
-    int crtSeqNr = 0;
+    public int crtSeqNr = 0;
     private final BufferedReader in;
     private final PrintWriter out;
 
-    public FixEnginePort(BufferedReader in, PrintWriter out) {
+    private final String clientCompId;
+
+    public FixEnginePort(BufferedReader in, PrintWriter out, String clientCompId) {
         this.in = in;
         this.out = out;
+        this.clientCompId = clientCompId;
     }
 
     public void sendMarketData(FixMessage fixMessage) {
@@ -68,7 +71,7 @@ public class FixEnginePort {
     // Basically fill or partial fill
     public void sendOrderTrade(Order order, int execId, OrderStatus orderStatus) {
         FixBodyExecutionReport fixBodyExecutionReport =
-                new FixBodyExecutionReport(Integer.toString(order.getId()), "clOrderId",
+                new FixBodyExecutionReport(Integer.toString(order.getId()), "Cezar SRL",
                         Integer.toString(execId), ExecType.TRADE, orderStatus, order.getSymbol(),
                         order.getSide(), order.getPrice(), order.getQuantity(), 0, 0);
         sendBody(fixBodyExecutionReport, MessageType.ExecutionReport);
@@ -78,11 +81,11 @@ public class FixEnginePort {
         ++crtSeqNr;
         FixHeader fixHeader = new FixHeader(BeginString.Fix_4_4, fixBody.toString().length(),
                 messageType, "Exchange SRL",
-                "Cezar SRL", crtSeqNr, OffsetDateTime.now());
+                clientCompId, crtSeqNr, OffsetDateTime.now());
         send(new FixMessage(fixHeader, fixBody, FixTrailer.getTrailer(fixHeader, fixBody)));
     }
 
-    private void send(FixMessage fixMessage) {
+    public void send(FixMessage fixMessage) {
         System.out.println("Port is sending fix message " + fixMessage);
         out.println(fixMessage);
         out.flush();

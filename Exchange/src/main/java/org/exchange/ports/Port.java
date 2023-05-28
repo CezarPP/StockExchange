@@ -8,7 +8,6 @@ import org.common.symbols.Symbol;
 import org.exchange.book.Order;
 import org.exchange.book.OrderBook;
 import org.exchange.book.OrderBookFactory;
-import org.exchange.fix.FixEnginePort;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -20,9 +19,13 @@ import java.util.TreeMap;
 
 public class Port extends Thread {
     public FixEnginePort fixEnginePort;
+
+    private PortBroadcastListener portBroadcastListener;
     public int clientId;
     private static int staticClientId;
     private BufferedReader in;
+
+    public String clientCompId = "Cezar SRL"; // TODO(send in login)
 
 
     // Map of outstanding orders of this client
@@ -40,7 +43,8 @@ public class Port extends Thread {
         try {
             this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            fixEnginePort = new FixEnginePort(this.in, out);
+            fixEnginePort = new FixEnginePort(this.in, out, clientCompId);
+            this.portBroadcastListener = new PortBroadcastListener(clientId, clientCompId, fixEnginePort);
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
@@ -48,6 +52,7 @@ public class Port extends Thread {
 
     @Override
     public void run() {
+        portBroadcastListener.start();
         try {
             String request;
             while ((request = in.readLine()) != null) {

@@ -1,38 +1,47 @@
 package org.exchange.ports;
 
+import org.common.fix.FixMessage;
+import org.common.fix.body.FixBodyExecutionReport;
+import org.common.fix.header.MessageType;
+
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
-import java.net.InetAddress;
+import java.util.Objects;
 
 public class PortBroadcastListener extends Thread {
-    private DatagramSocket socket;
-    private InetAddress address;
+    static private final int PORT = 4445;
+    private final int clientId;
+    private final String clientCompId;
 
-    private byte[] buf;
+    private final FixEnginePort fixEnginePort;
 
-    public PortBroadcastListener() {
-        try {
-            socket = new DatagramSocket();
-            address = InetAddress.getByName("localhost");
-        } catch (Exception e) {
-            System.out.println(e.getMessage());
-            System.exit(-1);
-        }
+    PortBroadcastListener(int clientId, String clientCompId, FixEnginePort fixEnginePort) {
+        this.clientId = clientId;
+        this.clientCompId = clientCompId;
+        this.fixEnginePort = fixEnginePort;
     }
 
     @Override
     public void run() {
-        while (true) {
-            buf = new byte[1000];
-            DatagramPacket packet = new DatagramPacket(buf, buf.length);
-            try {
-                socket.receive(packet);
-                String received = new String(packet.getData(), 0, packet.getLength());
+        try (DatagramSocket socket = new DatagramSocket(PORT)) {
+            while (true) {
+                byte[] buffer = new byte[1024];
 
-            } catch (Exception e) {
-                System.out.println(e.getMessage());
-                System.exit(-1);
+                DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
+                socket.receive(packet);
+
+                String fixMessage = new String(packet.getData(), 0, packet.getLength());
+                FixMessage message = FixMessage.fromString(fixMessage);
+                if (!Objects.equals(message.header().targetCompID, clientCompId))
+                    continue;
+                assert message.header().messageType == MessageType.ExecutionReport;
+                FixBodyExecutionReport report = FixBodyExecutionReport.fromString(message.body().toString());
+                // TODO(check execId)
+                // If execId is in order, forward message to client
+                fixEnginePort.send(message);
             }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
