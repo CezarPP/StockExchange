@@ -7,18 +7,18 @@ The system design is inspired from this Jane Street [video](https://www.youtube.
 Planned features:
 
 * [ ] Limit orders (BUY, SELL, CANCEL)
-* [ ] Matching Engine
-* [ ] Limit Order Book
-* [ ] Client Ports Processes
-* [ ] Client GUI (Swing)
-* [ ] Very simple fix protocol implementation
+* [x] Matching Engine
+* [x] Limit Order Book
+* [x] Client Ports Processes
+* [x] Client GUI (Swing)
+* [x] Very simple fix protocol implementation
 * [ ] Database for logging
-* [ ] Cancel Fairy
 
 For the Limit Order Book I want to try the following data structures:
 
 * [x] Java TreeMap (Red-Black Tree)
 * [ ] Adaptive Radix Tree (Trie)
+* [ ] Treaps
 * [ ] Others ?
 
 Module structure of the project:

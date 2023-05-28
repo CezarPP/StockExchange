@@ -9,15 +9,14 @@ public interface OrderBookInterface {
 
     /**
      * @param order Order from fix
-     * @return -> remaining quantity
      */
-    int match(Order order);
+    void match(Order order);
 
     /**
-     *
      * @param cntEntries the number of aggregated entries -> limits
      * @return MarketDataEntries for fix
      */
     List<Limit> getFirstSellEntries(int cntEntries);
+
     List<Limit> getFirstBuyEntries(int cntEntries);
 }

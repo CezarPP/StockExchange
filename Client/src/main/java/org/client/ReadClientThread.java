@@ -7,6 +7,7 @@ import org.common.fix.header.MessageType;
 import org.common.fix.market_data.MarketDataEntry;
 import org.common.fix.market_data.MarketDataEntryType;
 import org.common.fix.order.ExecType;
+import org.common.fix.order.OrderStatus;
 import org.gui.*;
 
 import java.io.BufferedReader;
@@ -67,6 +68,19 @@ public class ReadClientThread extends Thread {
             int clientOrderId = Integer.parseInt(fixBodyExecutionReport.origClientOrderID);
             int orderId = Integer.parseInt(fixBodyExecutionReport.orderID);
             userOrdersPanel.confirmOrder(clientOrderId, orderId);
+        } else if (fixBodyExecutionReport.execType == ExecType.TRADE) {
+            // Fill or partial fill
+            int orderId = Integer.parseInt(fixBodyExecutionReport.orderID);
+            OrderStatus orderStatus = fixBodyExecutionReport.orderStatus;
+
+            if (orderStatus == OrderStatus.FILLED) {
+                userOrdersPanel.removeOrder(orderId);
+            } else if (orderStatus == OrderStatus.PARTIALLY_FILLED) {
+                userOrdersPanel.decreaseQuantity(orderId, fixBodyExecutionReport.leavesQuantity);
+            } else {
+                throw new IllegalArgumentException("Not implemented orderStatus for execution report");
+            }
+
         } else {
             throw new IllegalArgumentException("Not implemented execType for execution report");
         }

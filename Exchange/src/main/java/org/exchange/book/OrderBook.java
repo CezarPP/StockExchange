@@ -43,17 +43,16 @@ public class OrderBook extends Thread implements OrderBookInterface {
 
     private void addNewSingleOrderToMap(Order order, LimitsMap<Float, Limit> limitTree, Side side) {
         int initialQty = order.getQuantity();
-        int remainingQuantity = match(order);
+        match(order);
 
-        if (remainingQuantity == 0) {
+        if (order.getQuantity() == 0) {
             BroadcastSender
                     .sendOrderTrade(order, ++execId, OrderStatus.FILLED);
             return;
-        } else if (remainingQuantity != initialQty) {
+        } else if (order.getQuantity() != initialQty) {
             BroadcastSender
                     .sendOrderTrade(order, ++execId, OrderStatus.PARTIALLY_FILLED);
         }
-        order.setQuantity(remainingQuantity);
         Limit limit = getLimit(order.getPrice(), limitTree);
         if (limit == null) {
             limit = new Limit(order.getPrice(), side);
@@ -89,15 +88,17 @@ public class OrderBook extends Thread implements OrderBookInterface {
     }
 
     @Override
-    public int match(Order order) {
-        return (order.getSide() == Side.BUY) ? matchBuyOrder(order) : matchSellOrder(order);
+    public void match(Order order) {
+        if (order.getSide() == Side.BUY)
+            matchBuyOrder(order);
+        else
+            matchSellOrder(order);
     }
 
     /**
      * @param order -> order
-     * @return -> remaining quantity
      */
-    private int matchBuyOrder(Order order) {
+    private void matchBuyOrder(Order order) {
         int remainingQuantity = order.getQuantity();
         Limit firstLimit = getFirstLimit(askLimits);
 
@@ -121,11 +122,10 @@ public class OrderBook extends Thread implements OrderBookInterface {
                 removeLimit(askLimits, firstLimit.getPrice());
             firstLimit = getFirstLimit(askLimits);
         }
-
-        return remainingQuantity;
+        order.setQuantity(remainingQuantity);
     }
 
-    private int matchSellOrder(Order order) {
+    private void matchSellOrder(Order order) {
         int remainingQuantity = order.getQuantity();
         Limit firstLimit = getFirstLimit(bidLimits);
 
@@ -150,8 +150,7 @@ public class OrderBook extends Thread implements OrderBookInterface {
                 removeLimit(bidLimits, firstLimit.getPrice());
             firstLimit = getFirstLimit(bidLimits);
         }
-
-        return remainingQuantity;
+        order.setQuantity(remainingQuantity);
     }
 
     public Symbol getSymbol() {

@@ -22,7 +22,7 @@ public class LimitOrder {
             this.order.setQuantity(0);
             return tmp;
         } else {
-            this.order.setQuantity(order.getQuantity() - quantity);
+            this.order.setQuantity(this.order.getQuantity() - quantity);
             return quantity;
         }
     }

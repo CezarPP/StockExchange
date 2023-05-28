@@ -61,11 +61,9 @@ public class UserOrdersPanel extends JPanel {
         }
     }
 
-    public void decreaseQuantity(int orderId, int quantity) {
+    public void decreaseQuantity(int orderId, int newQuantity) {
         int row = findRowByOrderId(orderId);
         if (row != -1) {
-            int currentQuantity = (int) ordersTableModel.getValueAt(row, 4);
-            int newQuantity = currentQuantity - quantity;
             if (newQuantity <= 0) {
                 ordersTableModel.removeRow(row);
             } else {
