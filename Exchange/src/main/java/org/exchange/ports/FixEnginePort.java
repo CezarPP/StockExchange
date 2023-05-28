@@ -64,23 +64,6 @@ public class FixEnginePort {
         sendBody(fixBodyMarketData, MessageType.MarketDataSnapshotFullRefresh);
     }
 
-    public void sendOrderReceiveConfirmation(Order order, int execId) {
-        FixBodyExecutionReport fixBodyExecutionReport =
-                new FixBodyExecutionReport(Integer.toString(order.getId()), Integer.toString(order.getClientOderId()),
-                        Integer.toString(execId), ExecType.NEW, OrderStatus.NEW, order.getSymbol(),
-                        order.getSide(), order.getPrice(), order.getQuantity(), 0, 0);
-        sendBody(fixBodyExecutionReport, MessageType.ExecutionReport);
-    }
-
-    // Basically fill or partial fill
-    public void sendOrderTrade(Order order, int execId, OrderStatus orderStatus) {
-        FixBodyExecutionReport fixBodyExecutionReport =
-                new FixBodyExecutionReport(Integer.toString(order.getId()), Integer.toString(order.getClientOderId()),
-                        Integer.toString(execId), ExecType.TRADE, orderStatus, order.getSymbol(),
-                        order.getSide(), order.getPrice(), order.getQuantity(), 0, 0);
-        sendBody(fixBodyExecutionReport, MessageType.ExecutionReport);
-    }
-
     public void sendLogin(FixMessage fixMessage) {
         FixBodyLogin fixBodyLoginReceived = FixBodyLogin.fromString(fixMessage.body().toString());
 

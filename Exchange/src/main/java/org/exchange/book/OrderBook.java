@@ -1,5 +1,6 @@
 package org.exchange.book;
 
+import org.common.fix.order.OrderStatus;
 import org.common.fix.order.Side;
 import org.common.symbols.Symbol;
 import org.exchange.broadcast.BroadcastSender;
@@ -41,9 +42,17 @@ public class OrderBook extends Thread implements OrderBookInterface {
     }
 
     private void addNewSingleOrderToMap(Order order, LimitsMap<Float, Limit> limitTree, Side side) {
+        int initialQty = order.getQuantity();
         int remainingQuantity = match(order);
-        if (remainingQuantity == 0)
+
+        if (remainingQuantity == 0) {
+            BroadcastSender
+                    .sendOrderTrade(order, ++execId, OrderStatus.FILLED);
             return;
+        } else if (remainingQuantity != initialQty) {
+            BroadcastSender
+                    .sendOrderTrade(order, ++execId, OrderStatus.PARTIALLY_FILLED);
+        }
         order.setQuantity(remainingQuantity);
         Limit limit = getLimit(order.getPrice(), limitTree);
         if (limit == null) {
@@ -56,17 +65,13 @@ public class OrderBook extends Thread implements OrderBookInterface {
     @Override
     public void addNewSingleOrder(Order order) {
         assert (order.getSymbol() == this.getSymbol());
+        BroadcastSender
+                .sendOrderReceiveConfirmation(order, ++execId);
         if (order.getSide() == Side.BUY) {
             addNewSingleOrderToMap(order, bidLimits, Side.BUY);
         } else {
             addNewSingleOrderToMap(order, askLimits, Side.SELL);
         }
-/*        SimpleServer
-                .getPortForClient(order.getClientId())
-                .fixEnginePort
-                .sendOrderReceiveConfirmation(order, ++execId);*/
-        BroadcastSender
-                .sendOrderReceiveConfirmation(order, ++execId);
     }
 
     @Override
@@ -93,10 +98,9 @@ public class OrderBook extends Thread implements OrderBookInterface {
      * @return -> remaining quantity
      */
     private int matchBuyOrder(Order order) {
-        // TODO(send client messages)
-
         int remainingQuantity = order.getQuantity();
         Limit firstLimit = getFirstLimit(askLimits);
+
         while (remainingQuantity > 0 &&
                 firstLimit != null && firstLimit.getPrice() <= order.getPrice()) {
             for (LimitOrder crtMarketableOrder = firstLimit.getFirstOrder();
@@ -104,8 +108,14 @@ public class OrderBook extends Thread implements OrderBookInterface {
                  crtMarketableOrder = firstLimit.getFirstOrder()) {
 
                 remainingQuantity -= crtMarketableOrder.decreaseQuantity(remainingQuantity);
-                if (crtMarketableOrder.getQuantity() == 0)
+                if (crtMarketableOrder.getQuantity() == 0) {
+                    BroadcastSender
+                            .sendOrderTrade(crtMarketableOrder.order, ++execId, OrderStatus.FILLED);
                     firstLimit.removeFirstOrder();
+                } else {
+                    BroadcastSender
+                            .sendOrderTrade(crtMarketableOrder.order, ++execId, OrderStatus.PARTIALLY_FILLED);
+                }
             }
             if (firstLimit.getFirstOrder() == null)
                 removeLimit(askLimits, firstLimit.getPrice());
@@ -116,18 +126,25 @@ public class OrderBook extends Thread implements OrderBookInterface {
     }
 
     private int matchSellOrder(Order order) {
-        //TODO(send client messages)
         int remainingQuantity = order.getQuantity();
         Limit firstLimit = getFirstLimit(bidLimits);
+
         while (remainingQuantity > 0 &&
                 firstLimit != null && firstLimit.getPrice() >= order.getPrice()) {
+
             for (LimitOrder crtMarketableOrder = firstLimit.getFirstOrder();
                  remainingQuantity > 0 && crtMarketableOrder != null;
                  crtMarketableOrder = firstLimit.getFirstOrder()) {
 
                 remainingQuantity -= crtMarketableOrder.decreaseQuantity(remainingQuantity);
-                if (crtMarketableOrder.getQuantity() == 0)
+                if (crtMarketableOrder.getQuantity() == 0) {
+                    BroadcastSender
+                            .sendOrderTrade(crtMarketableOrder.order, ++execId, OrderStatus.FILLED);
                     firstLimit.removeFirstOrder();
+                } else {
+                    BroadcastSender
+                            .sendOrderTrade(crtMarketableOrder.order, ++execId, OrderStatus.PARTIALLY_FILLED);
+                }
             }
             if (firstLimit.getFirstOrder() == null)
                 removeLimit(bidLimits, firstLimit.getPrice());

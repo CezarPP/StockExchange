@@ -1,24 +1,14 @@
 package org.exchange.book;
 
 public class LimitOrder {
-    private final int id;
-    private int quantity;
+    public final Order order;
     private LimitOrder nxt, prev;
     private final Limit parentLimit;
 
-    public LimitOrder(int id, int quantity, LimitOrder prev, LimitOrder nxt, Limit parentLimit) {
-        this.id = id;
-        this.quantity = quantity;
-        this.nxt = nxt;
-        this.prev = prev;
-        this.parentLimit = parentLimit;
-    }
-
     public LimitOrder(Order order, LimitOrder prev, LimitOrder nxt, Limit parentLimit) {
-        this.id = order.getId();
-        this.quantity = order.getQuantity();
-        this.prev = prev;
+        this.order = order;
         this.nxt = nxt;
+        this.prev = prev;
         this.parentLimit = parentLimit;
     }
 
@@ -27,22 +17,22 @@ public class LimitOrder {
      * @return returns the amount the quantity was actually decreased by
      */
     int decreaseQuantity(int quantity) {
-        if (quantity > this.quantity) {
-            int tmp = this.quantity;
-            this.quantity = 0;
+        if (quantity > this.order.getQuantity()) {
+            int tmp = this.order.getQuantity();
+            this.order.setQuantity(0);
             return tmp;
         } else {
-            this.quantity -= quantity;
+            this.order.setQuantity(order.getQuantity() - quantity);
             return quantity;
         }
     }
 
     public int getId() {
-        return id;
+        return order.getId();
     }
 
     public int getQuantity() {
-        return quantity;
+        return order.getQuantity();
     }
 
     public LimitOrder getNxt() {

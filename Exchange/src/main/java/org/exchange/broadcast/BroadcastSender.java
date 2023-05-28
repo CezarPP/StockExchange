@@ -20,6 +20,7 @@ import java.time.OffsetDateTime;
 
 public class BroadcastSender {
     private static final int PORT = 4445;
+    private static boolean isActive = true;
 
     public static void sendBroadcast(String message) {
         try {
@@ -37,11 +38,34 @@ public class BroadcastSender {
         }
     }
 
+    public static void setIsActive(boolean isActive) {
+        BroadcastSender.isActive = isActive;
+    }
+
     public static void sendOrderReceiveConfirmation(Order order, int execId) {
+        if (!isActive)
+            return;
+
         FixBodyExecutionReport fixBodyExecutionReport =
                 new FixBodyExecutionReport(Integer.toString(order.getId()), Integer.toString(order.getClientOderId()),
                         Integer.toString(execId), ExecType.NEW, OrderStatus.NEW, order.getSymbol(),
                         order.getSide(), order.getPrice(), order.getQuantity(), 0, 0);
+        String clientCompId = SimpleServer.getPortForClient(order.getClientId()).clientCompId;
+        int seqNo = ++SimpleServer.getPortForClient(order.getClientId()).fixEnginePort.crtSeqNr;
+        sendBodyExecReport(fixBodyExecutionReport, clientCompId, seqNo);
+    }
+
+
+    // Basically fill or partial fill
+    public static void sendOrderTrade(Order order, int execId, OrderStatus orderStatus) {
+        if (!isActive)
+            return;
+
+        FixBodyExecutionReport fixBodyExecutionReport =
+                new FixBodyExecutionReport(Integer.toString(order.getId()), Integer.toString(order.getClientOderId()),
+                        Integer.toString(execId), ExecType.TRADE, orderStatus, order.getSymbol(),
+                        order.getSide(), order.getPrice(), order.getQuantity(), 0, 0);
+
         String clientCompId = SimpleServer.getPortForClient(order.getClientId()).clientCompId;
         int seqNo = ++SimpleServer.getPortForClient(order.getClientId()).fixEnginePort.crtSeqNr;
         sendBodyExecReport(fixBodyExecutionReport, clientCompId, seqNo);
