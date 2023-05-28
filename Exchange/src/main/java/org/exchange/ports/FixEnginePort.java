@@ -23,15 +23,19 @@ import java.util.List;
  * A fix engine port for each client
  */
 public class FixEnginePort {
+    public final String exchangeCompId = "Exchange SRL";
     public int crtSeqNr = 0;
     private final BufferedReader in;
     private final PrintWriter out;
 
-    private final String clientCompId;
+    private String clientCompId = null;
 
-    public FixEnginePort(BufferedReader in, PrintWriter out, String clientCompId) {
+    public FixEnginePort(BufferedReader in, PrintWriter out) {
         this.in = in;
         this.out = out;
+    }
+
+    public void setClientCompId(String clientCompId) {
         this.clientCompId = clientCompId;
     }
 
@@ -71,16 +75,28 @@ public class FixEnginePort {
     // Basically fill or partial fill
     public void sendOrderTrade(Order order, int execId, OrderStatus orderStatus) {
         FixBodyExecutionReport fixBodyExecutionReport =
-                new FixBodyExecutionReport(Integer.toString(order.getId()), "Cezar SRL",
+                new FixBodyExecutionReport(Integer.toString(order.getId()), Integer.toString(order.getClientOderId()),
                         Integer.toString(execId), ExecType.TRADE, orderStatus, order.getSymbol(),
                         order.getSide(), order.getPrice(), order.getQuantity(), 0, 0);
         sendBody(fixBodyExecutionReport, MessageType.ExecutionReport);
     }
 
+    public void sendLogin(FixMessage fixMessage) {
+        FixBodyLogin fixBodyLoginReceived = FixBodyLogin.fromString(fixMessage.body().toString());
+
+        crtSeqNr++;
+
+        FixBodyLogin fixBody = new FixBodyLogin(fixBodyLoginReceived.encryptMethod, fixBodyLoginReceived.heartBeat, fixBodyLoginReceived.username);
+        FixHeader fixHeader =
+                new FixHeader(BeginString.Fix_4_4, fixBody.toString().length(), MessageType.Logon,
+                        exchangeCompId, fixMessage.header().senderCompID, crtSeqNr, OffsetDateTime.now());
+        send(new FixMessage(fixHeader, fixBody, FixTrailer.getTrailer(fixHeader, fixBody)));
+    }
+
     private void sendBody(FixBody fixBody, MessageType messageType) {
         ++crtSeqNr;
         FixHeader fixHeader = new FixHeader(BeginString.Fix_4_4, fixBody.toString().length(),
-                messageType, "Exchange SRL",
+                messageType, exchangeCompId,
                 clientCompId, crtSeqNr, OffsetDateTime.now());
         send(new FixMessage(fixHeader, fixBody, FixTrailer.getTrailer(fixHeader, fixBody)));
     }

@@ -23,11 +23,13 @@ import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
 public class FixEngineClient {
+    private static final Random random = new Random();
     private static final String SERVER_ADDRESS = "127.0.0.1";
     private static final int PORT = 8100;
-    final String senderCompID = "Cezar SRL";
+    public String senderCompID;
     final String targetCompID = "Exchange SRL";
     final String username = "Cezar";
     final static int marketDepth = 20;
@@ -41,13 +43,15 @@ public class FixEngineClient {
 
     FixEngineClient(StockExchangeClientFrame frame) {
         try {
+            senderCompID = "Cezar SRL" + random.nextInt(500000);
+            System.out.println("Sender comp id is " + senderCompID);
             Socket socket = new Socket(SERVER_ADDRESS, PORT);
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
             BufferedReader in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             this.in = in;
             this.out = out;
-            //sendLogin();
-            //waitLoginResponse();
+            sendLogin();
+            waitLoginResponse();
             new ReadClientThread(in, frame).start();
         } catch (Exception e) {
             System.err.println(e.getMessage());

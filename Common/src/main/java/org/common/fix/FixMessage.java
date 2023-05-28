@@ -29,7 +29,7 @@ public record FixMessage(FixHeader header, FixBody body, FixTrailer trailer) {
         // Construct body
         StringBuilder bodyStringBuilder = new StringBuilder();
         // Until we hit the checksum field
-        while (!parts[i].startsWith("10")) {
+        while (!parts[i].startsWith("10=")) {
             bodyStringBuilder.append(parts[i]).append(delimiter);
             i++;
         }

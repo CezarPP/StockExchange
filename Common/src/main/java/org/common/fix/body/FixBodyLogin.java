@@ -7,16 +7,17 @@ public class FixBodyLogin implements FixBody {
     /**
      * 98 -> EncryptMethod -> FIX.4.4 -> Always unencrypted
      */
-    final EncryptMethod encryptMethod;
+    public final EncryptMethod encryptMethod;
+
     /**
      * 108 -> HeartBtInt -> FIX.4.4 -> Same value used by both sides
      */
-    final int heartBeat;
+    public final int heartBeat;
 
     /**
      * 554 -> Username -> FIX.4.4 -> Userid or username.
      */
-    final String username;
+    public final String username;
 
 
     public FixBodyLogin(EncryptMethod encryptMethod, int heartBeat, String username) {

@@ -24,8 +24,7 @@ public class Port extends Thread {
     public int clientId;
     private static int staticClientId;
     private BufferedReader in;
-
-    public String clientCompId = "Cezar SRL"; // TODO(send in login)
+    public String clientCompId = null;
 
 
     // Map of outstanding orders of this client
@@ -43,8 +42,7 @@ public class Port extends Thread {
         try {
             this.in = new BufferedReader(new InputStreamReader(socket.getInputStream()));
             PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-            fixEnginePort = new FixEnginePort(this.in, out, clientCompId);
-            this.portBroadcastListener = new PortBroadcastListener(clientId, clientCompId, fixEnginePort);
+            fixEnginePort = new FixEnginePort(this.in, out);
         } catch (Exception e) {
             System.err.println(e.getMessage());
         }
@@ -52,7 +50,6 @@ public class Port extends Thread {
 
     @Override
     public void run() {
-        portBroadcastListener.start();
         try {
             String request;
             while ((request = in.readLine()) != null) {
@@ -64,6 +61,16 @@ public class Port extends Thread {
                     handleNewSingleOrder(fixMessage);
                 } else if (fixMessage.header().messageType == MessageType.OrderCancelRequest) {
                     handleOrderCancel(fixMessage);
+                } else if (fixMessage.header().messageType == MessageType.Logon) {
+                    assert this.clientCompId == null;
+                    System.out.println("Setting client comp id");
+                    this.clientCompId = fixMessage.header().senderCompID;
+                    System.out.println("Client comp id is " + clientCompId);
+                    fixEnginePort.sendLogin(fixMessage);
+
+                    fixEnginePort.setClientCompId(clientCompId);
+                    this.portBroadcastListener = new PortBroadcastListener(clientId, clientCompId, fixEnginePort);
+                    portBroadcastListener.start();
                 }
             }
         } catch (IOException e) {
