@@ -4,14 +4,23 @@ University project about building a functioning stock exchange.
 
 The system design is inspired from this Jane Street [video](https://www.youtube.com/watch?v=b1e4t2k2KJY&t=22s).
 
-Planned features:
+Planned exchange features:
 
-* [ ] Limit orders (BUY, SELL, CANCEL)
-* [x] Matching Engine
+* [x] Limit orders (BUY, SELL, CANCEL)
 * [x] Limit Order Book
-* [x] Client Ports Processes
+* [x] Matching Engine
+
+Planned communication features:
+
+* [x] Simple fix protocol implementation
+* [x] Broadcast with order executions, rejects, etc.
+* [x] Market data snapshots
+* [x] Client Port Processes
+* [x] Retransmitter for broadcasts
+
+Other features:
+
 * [x] Client GUI (Swing)
-* [x] Very simple fix protocol implementation
 * [ ] Database for logging
 
 For the Limit Order Book I want to try the following data structures:
