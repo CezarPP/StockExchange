@@ -3,7 +3,6 @@ package org.exchange.broadcast;
 import org.common.fix.FixMessage;
 import org.common.fix.FixTrailer;
 import org.common.fix.body.FixBody;
-import org.common.fix.body.FixBodyCancel;
 import org.common.fix.body.FixBodyCancelReject;
 import org.common.fix.body.FixBodyExecutionReport;
 import org.common.fix.cancel.CxlRejReason;
@@ -16,24 +15,79 @@ import org.common.fix.order.OrderStatus;
 import org.exchange.book.Order;
 import org.exchange.ports.SimpleServer;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.nio.ByteBuffer;
 import java.time.OffsetDateTime;
+import java.util.ArrayList;
+import java.util.List;
 
 public class BroadcastSender {
     private static final int PORT = 4445;
     private static boolean isActive = true;
+    private static List<byte[]> messages = new ArrayList<>();
+    private static int broadcastId = 0;
+
+    private static int getNewBroadcastId() {
+        return ++broadcastId;
+    }
+
+    public static byte[] concatenateByteArrays(byte[] a, byte[] b) {
+        ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        try {
+            outputStream.write(a);
+            outputStream.write(b);
+        } catch (IOException exception) {
+            System.out.println("Error concatenating byte arrays " + exception.getMessage());
+        }
+        return outputStream.toByteArray();
+    }
+
+    /**
+     * Resend all messages starting from broadcastId
+     *
+     * @param broadcastId the index to start sending from
+     */
+    public static void resendBroadcasts(int broadcastId) {
+        for (int i = broadcastId - 1; i < messages.size(); i++)
+            resendBroadcast(messages.get(i));
+    }
+
+    public static void resendBroadcast(byte[] broadcast) {
+        try {
+            DatagramSocket socket = new DatagramSocket();
+            socket.setBroadcast(true);
+
+            DatagramPacket packet =
+                    new DatagramPacket(broadcast, broadcast.length,
+                            InetAddress.getByName("255.255.255.255"), PORT);
+
+            socket.send(packet);
+            socket.close();
+        } catch (IOException exception) {
+            System.out.println("Error sending broadcast");
+            System.exit(-1);
+        }
+    }
 
     public static void sendBroadcast(String message) {
         try {
             DatagramSocket socket = new DatagramSocket();
             socket.setBroadcast(true);
 
-            byte[] buffer = message.getBytes();
+            int broadcastId = getNewBroadcastId();
+            byte[] broadcastIdBuf = ByteBuffer.allocate(4).putInt(broadcastId).array();
+            byte[] messageBytes = message.getBytes();
+            byte[] buffer = concatenateByteArrays(broadcastIdBuf, messageBytes);
 
-            DatagramPacket packet = new DatagramPacket(buffer, buffer.length, InetAddress.getByName("255.255.255.255"), PORT);
+            DatagramPacket packet =
+                    new DatagramPacket(buffer, buffer.length,
+                            InetAddress.getByName("255.255.255.255"), PORT);
+
+            messages.add(buffer);
             socket.send(packet);
             socket.close();
         } catch (IOException exception) {
@@ -89,9 +143,10 @@ public class BroadcastSender {
     }
 
     private static void sendBody(FixBody fixBody, String clientCompId, int seqNo, MessageType messageType) {
-        FixHeader fixHeader = new FixHeader(BeginString.Fix_4_4, fixBody.toString().length(),
-                messageType, "Exchange SRL",
-                clientCompId, seqNo, OffsetDateTime.now());
+        FixHeader fixHeader =
+                new FixHeader(BeginString.Fix_4_4, fixBody.toString().length(),
+                        messageType, "Exchange SRL",
+                        clientCompId, seqNo, OffsetDateTime.now());
         sendBroadcast(new FixMessage(fixHeader, fixBody, FixTrailer.getTrailer(fixHeader, fixBody)).toString());
     }
 

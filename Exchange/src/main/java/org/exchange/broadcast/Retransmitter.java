@@ -1,33 +1,31 @@
 package org.exchange.broadcast;
 
-import org.common.fix.body.FixBodyExecutionReport;
-
-import java.net.DatagramPacket;
 import java.net.DatagramSocket;
+
+import static org.exchange.broadcast.BroadcastListener.getNextPacket;
 
 public class Retransmitter extends Thread {
     private static final int PORT = 4445;
 
-    int expectedExecId;
+    int expectedBroadcastId = 1;
 
     @Override
     public void run() {
         try (DatagramSocket socket = new DatagramSocket(PORT)) {
             while (true) {
-                byte[] buffer = new byte[1024];
+                MessagePair messagePair = getNextPacket(socket);
+                assert messagePair != null;
 
-                DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                socket.receive(packet);
-
-                String message = new String(packet.getData(), 0, packet.getLength());
-                FixBodyExecutionReport report = FixBodyExecutionReport.fromString(message);
-                if (Integer.parseInt(report.execId) != expectedExecId) {
-                    // TODO(ask the exchange)
+                if (messagePair.broadcastId != expectedBroadcastId) {
+                    BroadcastSender
+                            .resendBroadcasts(expectedBroadcastId);
+                    while (getNextPacket(socket).broadcastId != expectedBroadcastId) {
+                    }
                 }
+                expectedBroadcastId++;
             }
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
-
 }

@@ -1,19 +1,19 @@
 package org.exchange.ports;
 
 import org.common.fix.FixMessage;
-import org.common.fix.body.FixBodyExecutionReport;
-import org.common.fix.header.MessageType;
+import org.exchange.broadcast.MessagePair;
 
-import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.util.Objects;
+
+import static org.exchange.broadcast.BroadcastListener.getNextPacket;
 
 public class PortBroadcastListener extends Thread {
     static private final int PORT = 4445;
     private final int clientId;
     private final String clientCompId;
-
     private final FixEnginePort fixEnginePort;
+    private int expectedBroadcastId = 1;
 
     PortBroadcastListener(int clientId, String clientCompId, FixEnginePort fixEnginePort) {
         this.clientId = clientId;
@@ -25,27 +25,26 @@ public class PortBroadcastListener extends Thread {
     public void run() {
         try (DatagramSocket socket = new DatagramSocket(PORT)) {
             while (true) {
-                byte[] buffer = new byte[1024];
+                MessagePair messagePair = getNextPacket(socket);
 
-                DatagramPacket packet = new DatagramPacket(buffer, buffer.length);
-                socket.receive(packet);
+                while (messagePair.broadcastId != expectedBroadcastId) {
+                    messagePair = getNextPacket(socket);
+                }
+                expectedBroadcastId++;
 
-                String fixMessage = new String(packet.getData(), 0, packet.getLength());
-                FixMessage message = FixMessage.fromString(fixMessage);
+                FixMessage message = FixMessage.fromString(messagePair.message);
                 if (!Objects.equals(message.header().targetCompID, clientCompId))
                     continue;
-
+/*
                 MessageType messageType = message.header().messageType;
-                if(messageType == MessageType.ExecutionReport) {
+                if (messageType == MessageType.ExecutionReport) {
                     FixBodyExecutionReport report = FixBodyExecutionReport.fromString(message.body().toString());
                     System.out.println("Fix port received exec report for orderId" + report.orderID);
-                    // TODO(check execId)
-                    // If execId is in order, forward message to client
-                } else if(messageType == MessageType.OrderCancelReject) {
+                } else if (messageType == MessageType.OrderCancelReject) {
 
                 } else {
                     throw new IllegalArgumentException("Post broadcast listener found unknown message type" + messageType);
-                }
+                }*/
                 fixEnginePort.send(message);
             }
         } catch (Exception e) {
