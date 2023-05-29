@@ -19,8 +19,6 @@ import java.util.TreeMap;
 
 public class Port extends Thread {
     public FixEnginePort fixEnginePort;
-
-    private PortBroadcastListener portBroadcastListener;
     public int clientId;
     private static int staticClientId;
     private BufferedReader in;
@@ -69,8 +67,8 @@ public class Port extends Thread {
                     fixEnginePort.sendLogin(fixMessage);
 
                     fixEnginePort.setClientCompId(clientCompId);
-                    this.portBroadcastListener = new PortBroadcastListener(clientId, clientCompId, fixEnginePort);
-                    portBroadcastListener.start();
+
+                    PortsBroadcastListenerFactory.getInstance().addClient(clientCompId, fixEnginePort);
                 }
             }
         } catch (IOException e) {
