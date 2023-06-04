@@ -3,6 +3,8 @@ package org.exchange.book;
 import org.common.fix.order.OrderStatus;
 import org.common.fix.order.Side;
 import org.common.symbols.Symbol;
+import org.exchange.book.limitsMap.LimitsMap;
+import org.exchange.book.limitsMap.LimitsTreeMap;
 import org.exchange.broadcast.BroadcastSender;
 
 import java.util.*;
@@ -10,7 +12,7 @@ import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class OrderBook extends Thread implements OrderBookInterface {
     private final Symbol symbol;
-    private final LimitsMap<Float, Limit> askLimits, bidLimits;
+    private final LimitsMap<Limit> askLimits, bidLimits;
     private final HashMap<Integer, LimitOrder> orders;
     static int orderId = 0;
     static int execId = 0;
@@ -19,7 +21,7 @@ public class OrderBook extends Thread implements OrderBookInterface {
     OrderBook(Symbol symbol) {
         this.symbol = symbol;
         askLimits = new LimitsTreeMap<>(); // ascending
-        bidLimits = new LimitsTreeMap<Float, Limit>(Collections.reverseOrder()); // descending
+        bidLimits = new LimitsTreeMap<Limit>(Collections.reverseOrder()); // descending
         orders = new HashMap<>();
     }
 
@@ -34,14 +36,14 @@ public class OrderBook extends Thread implements OrderBookInterface {
         return 0;
     }
 
-    private Limit getFirstLimit(LimitsMap<Float, Limit> limitTree) {
+    private Limit getFirstLimit(LimitsMap<Limit> limitTree) {
         var firstEntry = limitTree.firstEntry();
         if (firstEntry == null)
             return null;
         return firstEntry.getValue();
     }
 
-    private void addNewSingleOrderToMap(Order order, LimitsMap<Float, Limit> limitTree, Side side) {
+    private void addNewSingleOrderToMap(Order order, LimitsMap<Limit> limitTree, Side side) {
         int initialQty = order.getQuantity();
         match(order);
 
@@ -163,15 +165,15 @@ public class OrderBook extends Thread implements OrderBookInterface {
         return symbol;
     }
 
-    private Limit getLimit(Float price, LimitsMap<Float, Limit> limitTree) {
+    private Limit getLimit(Float price, LimitsMap<Limit> limitTree) {
         return limitTree.get(price);
     }
 
-    private void addLimit(LimitsMap<Float, Limit> limits, Limit limit) {
+    private void addLimit(LimitsMap<Limit> limits, Limit limit) {
         limits.put(limit.getPrice(), limit);
     }
 
-    private void removeLimit(LimitsMap<Float, Limit> limits, float limitPrice) {
+    private void removeLimit(LimitsMap<Limit> limits, float limitPrice) {
         limits.remove(limitPrice);
     }
 

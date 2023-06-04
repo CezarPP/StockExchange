@@ -28,7 +28,7 @@ import java.util.List;
 public class BroadcastSender {
     private static final int PORT = 4445;
     private static boolean isActive = true;
-    private static List<byte[]> messages = new ArrayList<>();
+    private static final List<byte[]> messages = new ArrayList<>();
     private static int broadcastId = 0;
 
     private static int getNewBroadcastId() {

@@ -1,41 +1,40 @@
-package org.exchange.book;
+package org.exchange.book.limitsMap;
 
 import java.util.*;
 
 /**
  * Wrapper around TreeMap that implements LimitsMap interface
  *
- * @param <K>
  * @param <V>
  */
-public class LimitsTreeMap<K extends Comparable<K>, V> implements LimitsMap<K, V> {
-    private final TreeMap<K, V> treeMap;
+public class LimitsTreeMap<V> implements LimitsMap<V> {
+    private final TreeMap<Float, V> treeMap;
 
     public LimitsTreeMap() {
         treeMap = new TreeMap<>();
     }
 
-    public LimitsTreeMap(Comparator<K> tComparator) {
+    public LimitsTreeMap(Comparator<Float> tComparator) {
         treeMap = new TreeMap<>(tComparator);
     }
 
     @Override
-    public Map.Entry<K, V> firstEntry() {
+    public Map.Entry<Float, V> firstEntry() {
         return treeMap.firstEntry();
     }
 
     @Override
-    public void put(K key, V value) {
+    public void put(Float key, V value) {
         treeMap.put(key, value);
     }
 
     @Override
-    public void remove(K key) {
+    public void remove(Float key) {
         treeMap.remove(key);
     }
 
     @Override
-    public V get(K key) {
+    public V get(Float key) {
         return treeMap.get(key);
     }
 

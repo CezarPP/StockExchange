@@ -9,7 +9,6 @@ import java.util.TreeMap;
 public class SimpleServer {
     public static final int PORT = 8100;
 
-    // clientId -> Port
     static Map<Integer, Port> clientToPort = new TreeMap<>();
 
     static public void startSimpleServer() {

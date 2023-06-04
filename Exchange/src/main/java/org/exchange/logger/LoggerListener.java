@@ -1,7 +1,6 @@
 package org.exchange.logger;
 
 import org.common.fix.FixMessage;
-import org.common.fix.body.FixBodyExecutionReport;
 import org.exchange.broadcast.MessagePair;
 
 import java.net.DatagramSocket;

@@ -1,4 +1,4 @@
-package org.exchange.book;
+package org.exchange.book.limitsMap;
 
 import java.util.List;
 import java.util.Map;
@@ -6,17 +6,16 @@ import java.util.Map;
 /**
  * Interface for ds that has the methods needed for interacting with the best bid/ask order
  *
- * @param <K> -> key type -> Integer -> limit's price
  * @param <V> -> value type -> Limit
  */
-public interface LimitsMap<K, V> {
-    Map.Entry<K, V> firstEntry();
+public interface LimitsMap<V> {
+    Map.Entry<Float, V> firstEntry();
 
-    void put(K key, V value);
+    void put(Float key, V value);
 
-    void remove(K key);
+    void remove(Float key);
 
-    V get(K key);
+    V get(Float key);
 
     List<V> getFirstN(int cnt);
 }

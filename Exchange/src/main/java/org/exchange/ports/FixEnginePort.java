@@ -8,8 +8,6 @@ import org.common.fix.header.FixHeader;
 import org.common.fix.header.MessageType;
 import org.common.fix.market_data.MarketDataEntry;
 import org.common.fix.market_data.MarketDataEntryType;
-import org.common.fix.order.ExecType;
-import org.common.fix.order.OrderStatus;
 import org.common.symbols.Symbol;
 import org.exchange.book.*;
 
