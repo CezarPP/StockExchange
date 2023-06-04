@@ -44,7 +44,7 @@ abstract class Node {
     public Node(Node parent) {
         count = 0;
         this.parent = parent;
-        this.prefix = new byte[8];
+        this.prefix = new byte[4];
         this.prefixLength = 0;
     }
 
@@ -127,5 +127,23 @@ class Node256 extends Node {
 
     public Node256(Node parent, byte[] prefix, int prefixLength) {
         super(parent, prefix, prefixLength);
+    }
+}
+
+class NodeKeyChildPair {
+    int key;
+    Node child;
+
+    public NodeKeyChildPair(int key, Node child) {
+        this.key = key;
+        this.child = child;
+    }
+
+    public int getKey() {
+        return key;
+    }
+
+    public Node getChild() {
+        return child;
     }
 }

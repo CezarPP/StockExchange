@@ -14,8 +14,12 @@ public class LimitsTreeMap<V> implements LimitsMap<V> {
         treeMap = new TreeMap<>();
     }
 
-    public LimitsTreeMap(Comparator<Float> tComparator) {
-        treeMap = new TreeMap<>(tComparator);
+    // True for decreasing
+    public LimitsTreeMap(boolean isDecreasing) {
+        if (isDecreasing)
+            treeMap = new TreeMap<>(Collections.reverseOrder());
+        else
+            treeMap = new TreeMap<>();
     }
 
     @Override

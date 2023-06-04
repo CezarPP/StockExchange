@@ -3,8 +3,7 @@ package org.exchange.book.limitsMap.art;
 import org.exchange.book.limitsMap.LimitsMap;
 
 import java.nio.ByteBuffer;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Adaptive Radix Tree that implements LimitsMap interface
@@ -13,9 +12,16 @@ import java.util.Map;
  */
 public class LimitsArtMap<V> implements LimitsMap<V> {
     Node root;
+    private final boolean isDecreasing;
 
     public LimitsArtMap() {
-        root = null;
+        this.root = null;
+        this.isDecreasing = false;
+    }
+
+    public LimitsArtMap(boolean isDecreasing) {
+        this.root = null;
+        this.isDecreasing = isDecreasing;
     }
 
 
@@ -33,22 +39,22 @@ public class LimitsArtMap<V> implements LimitsMap<V> {
     }
 
     private Node findChild(Node node, byte key) {
-        if (node instanceof Node4) {
-            for (int i = 0; i < node.count; i++)
-                if (((Node4) node).keys[i] == key) {
-                    return ((Node4) node).children[i];
+        if (node instanceof Node4 node4) {
+            for (int i = 0; i < node4.count; i++)
+                if (node4.keys[i] == key) {
+                    return node4.children[i];
                 }
-        } else if (node instanceof Node16) {
-            for (int i = 0; i < node.count; i++)
-                if (((Node16) node).keys[i] == key)
-                    return ((Node16) node).children[i];
-        } else if (node instanceof Node48) {
-            byte index = ((Node48) node).index[key & 0xFF];
+        } else if (node instanceof Node16 node16) {
+            for (int i = 0; i < node16.count; i++)
+                if (node16.keys[i] == key)
+                    return node16.children[i];
+        } else if (node instanceof Node48 node48) {
+            byte index = node48.index[key & 0xFF];
             if (index != -1) {
-                return ((Node48) node).children[index & 0xFF];
+                return node48.children[index & 0xFF];
             }
-        } else if (node instanceof Node256) {
-            return ((Node256) node).children[key & 0xFF];
+        } else if (node instanceof Node256 node256) {
+            return node256.children[key & 0xFF];
         } else {
             throw new IllegalArgumentException("Node type unknown");
         }
@@ -67,52 +73,35 @@ public class LimitsArtMap<V> implements LimitsMap<V> {
         throw new IllegalArgumentException("Node type unknown for isFull");
     }
 
-    private void setNewParentToChildren(Node node, Node newNode) {
-        if (node instanceof Node4) {
-            for (int i = 0; i < node.count; i++)
-                ((Node4) node).children[i].parent = newNode;
-        } else if (node instanceof Node16) {
-            for (int i = 0; i < node.count; i++)
-                ((Node16) node).children[i].parent = newNode;
-        } else if (node instanceof Node48) {
-            for (int i = 0; i < node.count; i++)
-                ((Node48) node).children[i].parent = newNode;
-        } else if (node instanceof Node256) {
-            for (int i = 0; i < 256; i++)
-                if (((Node256) node).children[i] != null)
-                    ((Node256) node).children[i].parent = newNode;
-        }
-    }
-
     /**
      * @param node -> Node that is already full
      * @return -> New bigger node
      */
     private Node grow(Node node) {
-        if (node instanceof Node4) {
+        if (node instanceof Node4 node4) {
             Node16 newNode = new Node16(node.parent, node.prefix, node.prefixLength);
             for (int i = 0; i < 4; i++) {
-                newNode.keys[i] = ((Node4) node).keys[i];
-                newNode.children[i] = ((Node4) node).children[i];
+                newNode.keys[i] = node4.keys[i];
+                newNode.children[i] = node4.children[i];
                 newNode.children[i].parent = newNode;
             }
             newNode.count = 4;
             return newNode;
-        } else if (node instanceof Node16) {
+        } else if (node instanceof Node16 node16) {
             Node48 newNode = new Node48(node.parent, node.prefix, node.prefixLength);
             for (byte i = 0; i < 16; i++) {
-                newNode.index[((Node16) node).keys[i] & 0xFF] = i;
-                newNode.children[i] = ((Node16) node).children[i];
+                newNode.index[node16.keys[i] & 0xFF] = i;
+                newNode.children[i] = node16.children[i];
                 newNode.children[i].parent = newNode;
             }
             newNode.count = 16;
             return newNode;
-        } else if (node instanceof Node48) {
+        } else if (node instanceof Node48 node48) {
             Node256 newNode = new Node256(node.parent, node.prefix, node.prefixLength);
             for (int i = 0; i < 256; i++) {
-                int index = ((Node48) node).index[i];
+                int index = node48.index[i];
                 if (index != -1) {
-                    newNode.children[i] = ((Node48) node).children[index & 0xFF];
+                    newNode.children[i] = node48.children[index & 0xFF];
                     newNode.children[i].parent = newNode;
                 }
             }
@@ -124,32 +113,32 @@ public class LimitsArtMap<V> implements LimitsMap<V> {
 
     private void replaceChild(Node parent, byte key, Node newChild) {
         assert parent != null;
-        if (parent instanceof Node4) {
+        if (parent instanceof Node4 node4) {
             int index = -1;
             for (int i = 0; i < parent.count; i++)
-                if (((Node4) parent).keys[i] == key)
+                if (node4.keys[i] == key)
                     index = i;
 
-            assert index != -1 : "Key not found in Node4 keys";
+            assert index != -1;
 
-            ((Node4) parent).children[index] = newChild;
-        } else if (parent instanceof Node16) {
+            node4.children[index] = newChild;
+        } else if (parent instanceof Node16 node16) {
             int index = -1;
             for (int i = 0; i < parent.count; i++)
-                if (((Node16) parent).keys[i] == key)
+                if (node16.keys[i] == key)
                     index = i;
 
-            assert index != -1 : "Key not found in Node16 keys";
+            assert index != -1;
 
-            ((Node16) parent).children[index] = newChild;
-        } else if (parent instanceof Node48) {
-            byte index = ((Node48) parent).index[key & 0xFF];
+            node16.children[index] = newChild;
+        } else if (parent instanceof Node48 node48) {
+            byte index = node48.index[key & 0xFF];
 
-            assert index != -1 : "Key not found in Node48 index";
+            assert index != -1;
 
-            ((Node48) parent).children[index & 0xFF] = newChild;
-        } else if (parent instanceof Node256) {
-            ((Node256) parent).children[key & 0xFF] = newChild;
+            node48.children[index & 0xFF] = newChild;
+        } else if (parent instanceof Node256 node256) {
+            node256.children[key & 0xFF] = newChild;
         } else {
             throw new IllegalArgumentException("Parent node type is unknown for replaceChild");
         }
@@ -264,17 +253,17 @@ public class LimitsArtMap<V> implements LimitsMap<V> {
 
     private void addChild(Node node, byte key, Node child) {
         assert (!isFull(node));
-        if (node instanceof Node4) {
-            ((Node4) node).keys[node.count] = key;
-            ((Node4) node).children[node.count] = child;
-        } else if (node instanceof Node16) {
-            ((Node16) node).keys[node.count] = key;
-            ((Node16) node).children[node.count] = child;
-        } else if (node instanceof Node48) {
-            ((Node48) node).index[key & 0xFF] = (byte) node.count;
-            ((Node48) node).children[node.count] = child;
-        } else if (node instanceof Node256) {
-            ((Node256) node).children[key & 0xFF] = child;
+        if (node instanceof Node4 node4) {
+            node4.keys[node.count] = key;
+            node4.children[node.count] = child;
+        } else if (node instanceof Node16 node16) {
+            node16.keys[node.count] = key;
+            node16.children[node.count] = child;
+        } else if (node instanceof Node48 node48) {
+            node48.index[key & 0xFF] = (byte) node.count;
+            node48.children[node.count] = child;
+        } else if (node instanceof Node256 node256) {
+            node256.children[key & 0xFF] = child;
         } else
             throw new IllegalArgumentException("Node type unknown for addChild");
         child.edge = key;
@@ -300,125 +289,290 @@ public class LimitsArtMap<V> implements LimitsMap<V> {
         // Start from the leaf and go up the tree
         deleteChild(parent, leaf.edge);
 
-/*        // Check if parent needs to be shark
+        // Check if parent needs to be shark
         while (parent != null && parent.count == 1 && !(parent instanceof LeafNode)) {
-            if (!shrink(parent))
-                break;
+            shrink(parent);
             parent = parent.parent;
-        }*/
+        }
     }
 
+    private Node getOnlyChild(Node node) {
+        Node child = null;
+        if (node instanceof Node4 node4) {
+            child = node4.children[0];
+        } else if (node instanceof Node16 node16) {
+            child = node16.children[0];
+        } else if (node instanceof Node48 node48) {
+            child = node48.children[0];
+        } else if (node instanceof Node256 node256) {
+            for (int i = 0; i < 256; i++) {
+                if (node256.children[i] != null) {
+                    child = node256.children[i];
+                    break;
+                }
+            }
+        } else
+            throw new IllegalArgumentException("Unknown node type for getOnlyChild");
+        return child;
+    }
+
+    private static byte[] concatenateArrays(byte[] prefix1, byte[] prefix2, int prefixLength1, int prefixLength2) {
+        byte[] concat = new byte[prefixLength1 + prefixLength2];
+        for (int i = 0; i < prefixLength1; i++)
+            concat[i] = prefix1[i];
+        for (int i = prefixLength1; i < prefixLength1 + prefixLength2; i++)
+            concat[i] = prefix2[i - prefixLength1];
+        return concat;
+    }
+
+    private void shrink(Node node) {
+        // This node only has one child
+        assert node.count == 1;
+        Node child = getOnlyChild(node);
+        assert child != null;
+        // Replace the node with the child
+
+        child.prefixLength = node.prefixLength + 1 + child.prefixLength;
+        byte[] newPrefix = concatenateArrays(node.prefix, new byte[]{child.edge}, node.prefixLength, 1);
+        child.prefix = concatenateArrays(newPrefix, child.prefix, newPrefix.length, child.prefixLength);
+        replace(node, child);
+    }
 
     private void deleteChild(Node parent, byte key) {
         int index = -1;
-        if (parent instanceof Node4) {
-            Node4 node = (Node4) parent;
-            for (int i = 0; i < node.count; i++)
-                if (node.keys[i] == key)
+        if (parent instanceof Node4 node4) {
+            for (int i = 0; i < node4.count; i++)
+                if (node4.keys[i] == key)
                     index = i;
             assert index != -1;
             // Move remaining children left
-            for (int i = index; i < node.count - 1; i++) {
-                node.children[i] = node.children[i + 1];
-                node.keys[i] = node.keys[i + 1];
+            for (int i = index; i < node4.count - 1; i++) {
+                node4.children[i] = node4.children[i + 1];
+                node4.keys[i] = node4.keys[i + 1];
             }
-        } else if (parent instanceof Node16) {
-            Node16 node = (Node16) parent;
-            for (int i = 0; i < node.count; i++)
-                if (node.keys[i] == key)
+        } else if (parent instanceof Node16 node16) {
+            for (int i = 0; i < node16.count; i++)
+                if (node16.keys[i] == key)
                     index = i;
             assert index != -1;
             // Move remaining children left
-            for (int i = index; i < node.count - 1; i++) {
-                node.children[i] = node.children[i + 1];
-                node.keys[i] = node.keys[i + 1];
+            for (int i = index; i < node16.count - 1; i++) {
+                node16.children[i] = node16.children[i + 1];
+                node16.keys[i] = node16.keys[i + 1];
             }
-        } else if (parent instanceof Node48) {
-            Node48 node = (Node48) parent;
-            index = node.index[key & 0xFF];
+        } else if (parent instanceof Node48 node48) {
+            index = node48.index[key & 0xFF];
             assert index != -1;
-            node.index[key & 0xFF] = -1;
+            node48.index[key & 0xFF] = -1;
             // Move remaining children left
-            for (int i = index; i < node.count - 1; i++) {
-                node.children[i] = node.children[i + 1];
-                node.index[node.children[i].edge & 0xFF] = (byte) i;
+            for (int i = index; i < node48.count - 1; i++) {
+                node48.children[i] = node48.children[i + 1];
+                node48.index[node48.children[i].edge & 0xFF] = (byte) i;
             }
-        } else if (parent instanceof Node256) {
-            Node256 node = (Node256) parent;
-            node.children[key & 0xFF] = null;
+        } else if (parent instanceof Node256 node256) {
+            node256.children[key & 0xFF] = null;
         }
 
         parent.count--;
     }
 
-    private boolean shrink(Node node) {
-        // Assume that the count of the current node is 1
-        assert node.count == 1;
-        Node child = null;
-        if (node instanceof Node4) {
-            child = ((Node4) node).children[0];
-        } else if (node instanceof Node16) {
-            child = ((Node16) node).children[0];
-        } else if (node instanceof Node48) {
-            child = ((Node48) node).children[0];
-        } else if (node instanceof Node256) {
-            for (int i = 0; i < 256; i++) {
-                if (((Node256) node).children[i] != null) {
-                    child = ((Node256) node).children[i];
-                    break;
-                }
-            }
+    private NodeKeyChildPair[] createPairs(byte[] keys, Node[] children, int count) {
+        NodeKeyChildPair[] pairs = new NodeKeyChildPair[count];
+        for (int i = 0; i < count; i++) {
+            pairs[i] = new NodeKeyChildPair(keys[i] & 0xFF, children[i]);
         }
-
-        if (child instanceof LeafNode<?>)
-            return false;
-        assert child != null;
-        deleteChild(node, child.edge);
-        node.prefix[node.prefixLength++] = child.edge;
-        for (int i = 0; i < child.prefixLength; i++) {
-            node.prefix[node.prefixLength++] = child.prefix[i];
-        }
-        return true;
+        Arrays.sort(pairs, Comparator.comparingInt(NodeKeyChildPair::getKey));
+        return pairs;
     }
 
-    private LeafNode<V> getFirstElement() {
-        if (root == null) {
+    private void updateNode(byte[] keys, Node[] children, NodeKeyChildPair[] pairs) {
+        for (int i = 0; i < pairs.length; i++) {
+            keys[i] = (byte) pairs[i].getKey();
+            children[i] = pairs[i].getChild();
+        }
+    }
+
+    private void sortChildren(Node node) {
+        NodeKeyChildPair[] pairs;
+        if (node instanceof Node4 node4) {
+            pairs = createPairs(node4.keys, node4.children, node4.count);
+            updateNode(node4.keys, node4.children, pairs);
+        } else if (node instanceof Node16 node16) {
+            pairs = createPairs(node16.keys, node16.children, node16.count);
+            updateNode(node16.keys, node16.children, pairs);
+        } else {
+            throw new IllegalArgumentException("Unknown node type in sortChildren");
+        }
+    }
+
+    private LeafNode<V> getFirstElement(Node node) {
+        if (node == null)
             return null;
-        }
-        Node node = root;
-        while (!(node instanceof LeafNode)) {
-            if (node instanceof Node4) {
-                node = ((Node4) node).children[0];
-            } else if (node instanceof Node16) {
-                node = ((Node16) node).children[0];
-            } else if (node instanceof Node48) {
+        if (node instanceof LeafNode<?>) {
+            return (LeafNode<V>) node;
+        } else {
+            if (node.count == 0)
+                return null;
+            Node newNode = null;
+            if (node instanceof Node4 node4) {
+                sortChildren(node4);
+                newNode = node4.children[0];
+            } else if (node instanceof Node16 node16) {
+                sortChildren(node16);
+                newNode = node16.children[0];
+            } else if (node instanceof Node48 node48) {
                 for (int i = 0; i < 256; i++) {
-                    if (((Node48) node).index[i] != -1) {
-                        node = ((Node48) node).children[((Node48) node).index[i]];
+                    if (node48.index[i] != -1) {
+                        newNode = node48.children[node48.index[i]];
                         break;
                     }
                 }
-            } else if (node instanceof Node256) {
+            } else if (node instanceof Node256 node256) {
                 for (int i = 0; i < 256; i++) {
-                    if (((Node256) node).children[i] != null) {
-                        node = ((Node256) node).children[i];
+                    if (node256.children[i] != null) {
+                        newNode = node256.children[i];
                         break;
+                    }
+                }
+            } else
+                throw new IllegalArgumentException("Unknown node type");
+            return getFirstElement(newNode);
+        }
+    }
+
+    private LeafNode<V> getLastElement(Node node) {
+        if (node instanceof LeafNode<?>)
+            return (LeafNode<V>) node;
+        else {
+            Node newNode = null;
+            if (node.count == 0)
+                return null;
+            if (node instanceof Node4 node4) {
+                sortChildren(node4);
+                newNode = node4.children[node.count - 1];
+            } else if (node instanceof Node16 node16) {
+                sortChildren(node16);
+                newNode = node16.children[node.count - 1];
+            } else if (node instanceof Node48 node48) {
+                for (int i = 255; i >= 0; i--) {
+                    if (node48.index[i] != -1) {
+                        newNode = node48.children[node48.index[i]];
+                        break;
+                    }
+                }
+            } else if (node instanceof Node256 node256) {
+                for (int i = 255; i >= 0; i--) {
+                    if (node256.children[i] != null) {
+                        newNode = node256.children[i];
+                        break;
+                    }
+                }
+            } else
+                throw new IllegalArgumentException("Unknown node type for getLastElement");
+            return getLastElement(newNode);
+        }
+    }
+
+    // Returns the bytes of the float that will be inserted
+    public static byte[] floatToBytes(float value) {
+        int intBits = Float.floatToIntBits(value);
+        return new byte[]{
+                (byte) ((intBits >> 24) & 0xFF),
+                (byte) ((intBits >> 16) & 0xFF),
+                (byte) ((intBits >> 8) & 0xFF),
+                (byte) (intBits & 0xFF)
+        };
+    }
+
+    public static float bytesToFloat(byte[] bytes) {
+        int intBits = ((bytes[0] & 0xFF) << 24) |
+                ((bytes[1] & 0xFF) << 16) |
+                ((bytes[2] & 0xFF) << 8) |
+                (bytes[3] & 0xFF);
+        return Float.intBitsToFloat(intBits);
+    }
+
+    private LeafNode<V> getNextSmallestLeaf(LeafNode<V> node) {
+        Node parent = node.parent;
+        byte edge = node.edge;
+        while (parent != null) {
+            if (parent instanceof Node4 parent4) {
+                sortChildren(parent4);
+                for (int i = 0; i < parent4.count; i++) {
+                    if (parent4.keys[i] == edge && i + 1 < parent4.count) {
+                        return getFirstElement(parent4.children[i + 1]);
+                    }
+                }
+            } else if (parent instanceof Node16 parent16) {
+                sortChildren(parent16);
+                for (int i = 0; i < parent16.count; i++) {
+                    if (parent16.keys[i] == edge && i + 1 < parent16.count) {
+                        return getFirstElement(parent16.children[i + 1]);
+                    }
+                }
+            } else if (parent instanceof Node48 parent48) {
+                for (int i = (edge & 0xFF) + 1; i < 256; i++)
+                    if (parent48.index[i] != -1) {
+                        return getFirstElement(parent48.children[parent48.index[i]]);
+                    }
+            } else if (parent instanceof Node256 parent256) {
+                for (int i = (edge & 0xFF) + 1; i < 256; i++) {
+                    if (parent256.children[i] != null) {
+                        return getFirstElement(parent256.children[i]);
                     }
                 }
             }
+            edge = parent.edge;
+            parent = parent.parent;
         }
-        return (LeafNode<V>) node;
+        return null;
     }
 
-    private byte[] floatToBytes(Float key) {
-        return ByteBuffer.allocate(4).putFloat(key).array();
+    private LeafNode<V> getNextBiggestLeaf(LeafNode<V> node) {
+        Node parent = node.parent;
+        byte edge = node.edge;
+        while (parent != null) {
+            if (parent instanceof Node4 parent4) {
+                sortChildren(parent4);
+                for (int i = parent4.count - 1; i >= 0; i--) {
+                    if (parent4.keys[i] == edge && i - 1 >= 0) {
+                        return getLastElement(parent4.children[i - 1]);
+                    }
+                }
+            } else if (parent instanceof Node16 parent16) {
+                sortChildren(parent16);
+                for (int i = parent16.count - 1; i >= 0; i--) {
+                    if (parent16.keys[i] == edge && i - 1 >= 0) {
+                        return getLastElement(parent16.children[i - 1]);
+                    }
+                }
+            } else if (parent instanceof Node48 parent48) {
+                for (int i = (edge & 0xFF) - 1; i >= 0; i--)
+                    if (parent48.index[i] != -1) {
+                        return getLastElement(parent48.children[parent48.index[i]]);
+                    }
+            } else if (parent instanceof Node256 parent256) {
+                for (int i = (edge & 0xFF) - 1; i >= 0; i--) {
+                    if (parent256.children[i] != null) {
+                        return getLastElement(parent256.children[i]);
+                    }
+                }
+            }
+            edge = parent.edge;
+            parent = parent.parent;
+        }
+        return null;
     }
 
     @Override
-    public Map.Entry<Float, V> firstEntry() {
-        LeafNode<V> firstElement = getFirstElement();
-        assert firstElement != null;
-        return Map.entry(ByteBuffer.wrap(firstElement.key).getFloat(), firstElement.value);
+    public List<V> getFirstN(int n) {
+        List<V> entries = new ArrayList<>();
+        LeafNode<V> node = (isDecreasing) ? getLastElement(root) : getFirstElement(root);
+        while (node != null && entries.size() < n) {
+            entries.add(node.value);
+            node = (isDecreasing) ? getNextBiggestLeaf(node) : getNextSmallestLeaf(node);
+        }
+        return entries;
     }
 
     @Override
@@ -444,7 +598,13 @@ public class LimitsArtMap<V> implements LimitsMap<V> {
     }
 
     @Override
-    public List<V> getFirstN(int cnt) {
-        return null;
+    public Map.Entry<Float, V> firstEntry() {
+        if (root == null) {
+            return null;
+        }
+        LeafNode<V> element = (isDecreasing) ? getLastElement(root) : getFirstElement(root);
+        if (element == null)
+            return null;
+        return Map.entry(bytesToFloat(element.key), element.value);
     }
 }

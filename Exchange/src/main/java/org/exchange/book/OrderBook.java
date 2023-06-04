@@ -21,7 +21,7 @@ public class OrderBook extends Thread implements OrderBookInterface {
     OrderBook(Symbol symbol) {
         this.symbol = symbol;
         askLimits = new LimitsTreeMap<>(); // ascending
-        bidLimits = new LimitsTreeMap<Limit>(Collections.reverseOrder()); // descending
+        bidLimits = new LimitsTreeMap<Limit>(true); // descending
         orders = new HashMap<>();
     }
 
