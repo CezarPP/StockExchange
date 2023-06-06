@@ -3,7 +3,6 @@ package org.exchange.book;
 import org.common.fix.order.Side;
 import org.exchange.book.limitsMap.LimitsMap;
 import org.exchange.book.limitsMap.LimitsTreeMap;
-import org.exchange.book.limitsMap.art.LimitsArtMap;
 import org.junit.jupiter.api.Test;
 
 import java.util.*;
@@ -11,14 +10,17 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 
-public class LimitsArtMapTest {
+public abstract class AbstractLimitsMapTest {
     static Random random = new Random();
     static final int cntToInsert = (1 << 13);
+
+    protected abstract LimitsMap<Limit> getLimitsMapDescending();
+    protected abstract LimitsMap<Limit> getLimitsMapAscending();
 
     @Test
     void testInsertAndGet() {
         Map<Float, Limit> inserted = new TreeMap<>();
-        LimitsMap<Limit> limitsMap = new LimitsArtMap<>();
+        LimitsMap<Limit> limitsMap = getLimitsMapAscending();
 
         for (int i = 0; i < cntToInsert; i++) {
             Limit limit = new Limit(getRandomPrice(), (random.nextBoolean()) ? Side.BUY : Side.SELL);
@@ -37,7 +39,7 @@ public class LimitsArtMapTest {
     @Test
     void testInsertDeleteAndGet() {
         List<Limit> inserted = new ArrayList<>();
-        LimitsMap<Limit> limitsMap = new LimitsArtMap<>();
+        LimitsMap<Limit> limitsMap = getLimitsMapAscending();
         TreeMap<Float, Limit> limitsMapCorrect = new TreeMap<>();
         final int cntToDelete = cntToInsert / 3;
         for (int i = 0; i < cntToInsert; i++) {
@@ -72,7 +74,7 @@ public class LimitsArtMapTest {
     @Test
     void testGetFirstAscending() {
         List<Limit> inserted = new ArrayList<>();
-        LimitsMap<Limit> limitsMap = new LimitsArtMap<>();
+        LimitsMap<Limit> limitsMap = getLimitsMapAscending();
         LimitsMap<Limit> limitsMapCorrect = new LimitsTreeMap<>();
         final int cntToDelete = cntToInsert / 3;
 
@@ -104,7 +106,7 @@ public class LimitsArtMapTest {
     @Test
     void testGetFirstDescending() {
         List<Limit> inserted = new ArrayList<>();
-        LimitsMap<Limit> limitsMap = new LimitsArtMap<>(true);
+        LimitsMap<Limit> limitsMap = getLimitsMapDescending();
         LimitsMap<Limit> limitsMapCorrect = new LimitsTreeMap<>(true);
         final int cntToDelete = cntToInsert / 3;
 
@@ -133,7 +135,7 @@ public class LimitsArtMapTest {
     @Test
     void getFirstNAscending() {
         List<Limit> inserted = new ArrayList<>();
-        LimitsMap<Limit> limitsMap = new LimitsArtMap<>();
+        LimitsMap<Limit> limitsMap = getLimitsMapAscending();
         LimitsMap<Limit> limitsMapCorrect = new LimitsTreeMap<>();
         final int cntToDelete = cntToInsert / 3;
 
@@ -162,10 +164,11 @@ public class LimitsArtMapTest {
         }
     }
 
+    // Also tests insertion and deletion
     @Test
     void getFirstNDescending() {
         List<Limit> inserted = new ArrayList<>();
-        LimitsMap<Limit> limitsMap = new LimitsArtMap<>(true);
+        LimitsMap<Limit> limitsMap = getLimitsMapDescending();
         LimitsMap<Limit> limitsMapCorrect = new LimitsTreeMap<>(true);
         final int cntToDelete = cntToInsert / 3;
 
