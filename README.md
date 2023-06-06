@@ -2,7 +2,7 @@
 
 University project about building a functioning stock exchange.
 
-The system design is inspired from this Jane Street [video](https://www.youtube.com/watch?v=b1e4t2k2KJY&t=22s).
+The system design is inspired by this Jane Street [video](https://www.youtube.com/watch?v=b1e4t2k2KJY&t=22s).
 
 Planned exchange features:
 
@@ -23,12 +23,11 @@ Other features:
 * [x] Client GUI (Swing)
 * [ ] Database for logging
 
-For the Limit Order Book I want to try the following data structures:
+For the Limit Order Book, I want to try the following data structures:
 
 * [x] Java TreeMap (Red-Black Tree)
-* [ ] Adaptive Radix Tree (Trie)
-* [ ] Treaps
-* [ ] Others ?
+* [x] [ART](https://db.in.tum.de/~leis/papers/ART.pdf) (Adaptive Radix Tree)
+* [x] Treap
 
 Module structure of the project:
 
