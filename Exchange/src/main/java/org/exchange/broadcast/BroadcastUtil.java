@@ -6,7 +6,7 @@ import java.net.DatagramSocket;
 import java.nio.ByteBuffer;
 import java.util.Arrays;
 
-public class BroadcastListener {
+public class BroadcastUtil {
     public static MessagePair getNextPacket(DatagramSocket socket) {
         try {
             byte[] buffer = new byte[1024];

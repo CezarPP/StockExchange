@@ -7,19 +7,29 @@ import com.mongodb.client.MongoDatabase;
 import org.bson.Document;
 import org.common.fix.FixMessage;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * No-SQL database for storing order executions
  */
-public class Logger {
+public class Logger extends Thread {
     MongoClient client;
     MongoDatabase database;
     MongoCollection<Document> collection;
+
+    LoggerListener loggerListener;
 
     public Logger() {
         client = MongoClients.create(); // Connect to localhost:27017 by default
         database = client.getDatabase("Exchange");
         collection = database.getCollection("Broadcasts");
-        new LoggerListener(this).start();
+        loggerListener = new LoggerListener(this);
+    }
+
+    @Override
+    public void run() {
+        loggerListener.start();
     }
 
     public void insertMessage(FixMessage fixMessage) {
@@ -31,4 +41,15 @@ public class Logger {
         collection.insertOne(document);
     }
 
+    public List<Document> getAllMessages() {
+        return collection.find().into(new ArrayList<>());
+    }
+
+    public void printAllMessages() {
+        System.out.println("All messages in the database are: ");
+        List<Document> allMessages = getAllMessages();
+        for (Document doc : allMessages) {
+            System.out.println(doc.toJson());
+        }
+    }
 }

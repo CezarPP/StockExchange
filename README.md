@@ -13,15 +13,15 @@ Planned exchange features:
 Planned communication features:
 
 * [x] Simple fix protocol implementation
-* [x] Broadcast with order executions, rejects, etc.
+* [x] Multicast with order executions, rejects, etc.
 * [x] Market data snapshots
 * [x] Client Port Processes
-* [x] Retransmitter for broadcasts
+* [x] Retransmitter for multicast
 
 Other features:
 
 * [x] Client GUI (Swing)
-* [ ] Database for logging
+* [x] MongoDB for logging
 
 For the Limit Order Book, I want to try the following data structures:
 

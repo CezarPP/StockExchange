@@ -20,6 +20,7 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.MulticastSocket;
 import java.nio.ByteBuffer;
 import java.time.OffsetDateTime;
 import java.util.ArrayList;
@@ -58,12 +59,12 @@ public class BroadcastSender {
 
     public static void resendBroadcast(byte[] broadcast) {
         try {
-            DatagramSocket socket = new DatagramSocket();
-            socket.setBroadcast(true);
+            MulticastSocket socket = new MulticastSocket();
+            InetAddress group = InetAddress.getByName("224.0.0.1");
 
             DatagramPacket packet =
                     new DatagramPacket(broadcast, broadcast.length,
-                            InetAddress.getByName("255.255.255.255"), PORT);
+                            group, PORT);
 
             socket.send(packet);
             socket.close();
@@ -75,8 +76,9 @@ public class BroadcastSender {
 
     public static void sendBroadcast(String message) {
         try {
-            DatagramSocket socket = new DatagramSocket();
-            socket.setBroadcast(true);
+            MulticastSocket socket = new MulticastSocket();
+            InetAddress group = InetAddress.getByName("224.0.0.1");
+
 
             int broadcastId = getNewBroadcastId();
             byte[] broadcastIdBuf = ByteBuffer.allocate(4).putInt(broadcastId).array();
@@ -85,7 +87,7 @@ public class BroadcastSender {
 
             DatagramPacket packet =
                     new DatagramPacket(buffer, buffer.length,
-                            InetAddress.getByName("255.255.255.255"), PORT);
+                            group, PORT);
 
             messages.add(buffer);
             socket.send(packet);
