@@ -28,6 +28,7 @@ For the Limit Order Book, I want to try the following data structures:
 * [x] Java TreeMap (Red-Black Tree)
 * [x] [ART](https://db.in.tum.de/~leis/papers/ART.pdf) (Adaptive Radix Tree)
 * [x] Treap
+* [x] Splay tree
 
 Module structure of the project:
 

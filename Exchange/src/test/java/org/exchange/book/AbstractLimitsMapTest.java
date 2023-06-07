@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertNotNull;
 
 public abstract class AbstractLimitsMapTest {
     static Random random = new Random();
-    static final int cntToInsert = (1 << 13);
+    static final int cntToInsert = (1 << 16);
 
     protected abstract LimitsMap<Limit> getLimitsMapDescending();
     protected abstract LimitsMap<Limit> getLimitsMapAscending();
