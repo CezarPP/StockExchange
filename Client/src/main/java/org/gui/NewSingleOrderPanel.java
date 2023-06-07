@@ -79,6 +79,19 @@ public class NewSingleOrderPanel extends JPanel implements TimerObserver {
             }
         });
         buySellPanel.add(cancelButton);
+
+        JButton exitButton = new JButton("Exit");
+        exitButton.addActionListener(e -> {
+            int confirm = JOptionPane.showConfirmDialog(
+                    null, "Are you sure you want to close the app?",
+                    "Exit Confirmation", JOptionPane.YES_NO_OPTION
+            );
+            if (confirm == 0) {
+                System.exit(0);
+            }
+        });
+        buySellPanel.add(exitButton);
+
         this.add(buySellPanel);
 
 

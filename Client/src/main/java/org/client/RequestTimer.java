@@ -4,7 +4,7 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 public class RequestTimer {
-    private static final int period = 10_000;
+    private static final int period = 1_000; // 1 second
     private final TimerObserver observer;
     private Timer timer;
 
