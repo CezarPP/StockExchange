@@ -15,6 +15,7 @@ public abstract class AbstractLimitsMapTest {
     static final int cntToInsert = (1 << 16);
 
     protected abstract LimitsMap<Limit> getLimitsMapDescending();
+
     protected abstract LimitsMap<Limit> getLimitsMapAscending();
 
     @Test
@@ -63,11 +64,14 @@ public abstract class AbstractLimitsMapTest {
         }
     }
 
+    static float truncatePrice(float price) {
+        int temp = (int) (price * 100);
+        return (float) temp / 100;
+    }
+
     static Float getRandomPrice() {
         float price = random.nextFloat() * 10000;
-        int temp = (int) (price * 100);
-        price = (float) temp / 100;
-        return price;
+        return truncatePrice(price);
     }
 
     // Also tests insert and delete

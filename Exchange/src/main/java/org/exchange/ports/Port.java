@@ -76,13 +76,18 @@ public class Port extends Thread {
         }
     }
 
+    static float truncatePrice(float price) {
+        int temp = (int) (price * 100);
+        return (float) temp / 100;
+    }
+
     private void handleNewSingleOrder(FixMessage fixMessage) {
         FixBodyOrder fixBodyOrder = FixBodyOrder.fromString(fixMessage.body().toString());
         Symbol symbol = fixBodyOrder.symbol;
         OrderBook orderBook = OrderBookFactory.getOrderBook(symbol);
         int qty = fixBodyOrder.orderQuantity;
         float price = fixBodyOrder.price;
-        Order order = new Order(1, Integer.parseInt(fixBodyOrder.clientOrderID), clientId, symbol, price, qty,
+        Order order = new Order(1, Integer.parseInt(fixBodyOrder.clientOrderID), clientId, symbol, truncatePrice(price), qty,
                 fixBodyOrder.side, false);
         int orderId = orderBook.addToQueue(order);
         ordersMap.put(orderId, order);

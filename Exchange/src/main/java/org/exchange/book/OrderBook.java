@@ -196,6 +196,11 @@ public class OrderBook extends Thread implements OrderBookInterface {
         return bidLimits.getFirstN(cntEntries);
     }
 
+    static float truncatePrice(float price) {
+        int temp = (int) (price * 100);
+        return (float) temp / 100;
+    }
+
     @Override
     public void run() {
         while (true) {
