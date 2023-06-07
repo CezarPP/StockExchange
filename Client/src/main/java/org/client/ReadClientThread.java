@@ -106,12 +106,17 @@ public class ReadClientThread extends Thread {
         }
     }
 
+    static float truncatePrice(float price) {
+        int temp = (int) (price * 100);
+        return (float) temp / 100;
+    }
+
     private void handleExecReportConfirmation(FixBodyExecutionReport fixBodyExecutionReport) {
         int clientOrderId = Integer.parseInt(fixBodyExecutionReport.origClientOrderID);
         int orderId = Integer.parseInt(fixBodyExecutionReport.orderID);
         userOrdersPanel.confirmOrder(clientOrderId, orderId);
         Order order = new Order(Integer.parseInt(fixBodyExecutionReport.origClientOrderID),
-                fixBodyExecutionReport.symbol, fixBodyExecutionReport.price,
+                fixBodyExecutionReport.symbol, truncatePrice(fixBodyExecutionReport.price),
                 fixBodyExecutionReport.leavesQuantity, fixBodyExecutionReport.side);
         order.setExchangeOrderID(orderId);
         fixEngineClient.ordersSent.put(orderId, order);

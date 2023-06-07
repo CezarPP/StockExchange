@@ -35,3 +35,6 @@ Module structure of the project:
 * exchange - Limit order book and matching engine
 * client - Classes related to client processes
 * common - Common classes -> fix protocol, symbols
+
+Interface:
+![Interface](./img/Exchange.png)

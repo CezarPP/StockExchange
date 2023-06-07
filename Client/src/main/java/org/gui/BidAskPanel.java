@@ -36,20 +36,22 @@ public class BidAskPanel extends JPanel {
     }
 
     public void addBid(PanelOrder panelOrder) {
-        addOrUpdate(bidTableModel, panelOrder.id(), panelOrder.price(), panelOrder.quantity());
-        sortTable(bidTableModel, (o1, o2) -> Double.compare((double) ((Vector<?>) o2).get(1), (double) ((Vector<?>) o1).get(1)));
+        String formattedPrice = String.format("%.2f", panelOrder.price());
+        addOrUpdate(bidTableModel, panelOrder.id(), formattedPrice, panelOrder.quantity());
+        // sortTable(bidTableModel, (o1, o2) -> Double.compare((double) ((Vector<?>) o2).get(1), (double) ((Vector<?>) o1).get(1)));
         setVisible(true);
     }
 
     public void addAsk(PanelOrder panelOrder) {
-        addOrUpdate(askTableModel, panelOrder.id(), panelOrder.price(), panelOrder.quantity());
-        sortTable(askTableModel, Comparator.comparingDouble(o -> (double) ((Vector<?>) o).get(1)));
+        String formattedPrice = String.format("%.2f", panelOrder.price());
+        addOrUpdate(askTableModel, panelOrder.id(), formattedPrice, panelOrder.quantity());
+        // sortTable(askTableModel, Comparator.comparingDouble(o -> (double) ((Vector<?>) o).get(1)));
         setVisible(true);
     }
 
-    private void addOrUpdate(DefaultTableModel tableModel, int id, double price, int quantity) {
+    private void addOrUpdate(DefaultTableModel tableModel, int id, String price, int quantity) {
         for (int i = 0; i < tableModel.getRowCount(); i++) {
-            if ((double) tableModel.getValueAt(i, 1) == price) {
+            if (tableModel.getValueAt(i, 1).equals(price)) {
                 tableModel.setValueAt((int) tableModel.getValueAt(i, 2) + quantity, i, 2);
                 return;
             }
@@ -58,12 +60,12 @@ public class BidAskPanel extends JPanel {
         tableModel.addRow(rowData);
         setVisible(true);
     }
-
+/*
     private void sortTable(DefaultTableModel tableModel, Comparator<Object> comparator) {
         tableModel.getDataVector().sort(comparator);
         tableModel.fireTableDataChanged();
         setVisible(true);
-    }
+    }*/
 
     public void removeAllBids() {
         bidTableModel.setRowCount(0);

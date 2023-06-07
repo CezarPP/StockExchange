@@ -23,8 +23,9 @@ public class UserOrdersPanel extends JPanel {
     }
 
     public void addOrder(Order order) {
+        String formattedPrice = String.format("%.2f", order.price);
         Object[] rowData = {order.exchangeOrderID, order.clientOrderId, order.symbol,
-                order.price, order.quantity, (order.side == Side.BUY) ? "BID" : "ASK", "Not confirmed"};
+                formattedPrice, order.quantity, (order.side == Side.BUY) ? "BID" : "ASK", "Not confirmed"};
         ordersTableModel.addRow(rowData);
     }
 

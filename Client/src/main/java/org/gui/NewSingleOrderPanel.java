@@ -18,6 +18,11 @@ public class NewSingleOrderPanel extends JPanel implements TimerObserver {
     final UserOrdersPanel userOrdersPanel;
     RequestTimer requestTimer;
 
+    static float truncatePrice(float price) {
+        int temp = (int) (price * 100);
+        return (float) temp / 100;
+    }
+
     public NewSingleOrderPanel(StockExchangeClientFrame frame, FixEngineClient fixEngine) {
         this.userOrdersPanel = UserOrdersPanelFactory.getUserOrdersPanel();
         this.frame = frame;
@@ -94,7 +99,6 @@ public class NewSingleOrderPanel extends JPanel implements TimerObserver {
 
         this.add(buySellPanel);
 
-
         // Submit button
         JPanel submitPanel = new JPanel(new FlowLayout(FlowLayout.CENTER));
         JButton submitButton = new JButton("Submit");
@@ -105,7 +109,7 @@ public class NewSingleOrderPanel extends JPanel implements TimerObserver {
             double price = (Double) priceSpinner.getValue();
             boolean isBuy = buyButton.isSelected();
 
-            Order order = new Order(fixEngine.getNewClientOrderId(), symbol, (float) price, quantity, (isBuy) ? Side.BUY : Side.SELL);
+            Order order = new Order(fixEngine.getNewClientOrderId(), symbol, truncatePrice((float) price), quantity, (isBuy) ? Side.BUY : Side.SELL);
             userOrdersPanel.addOrder(order);
             fixEngine.sendNewSingleOrderLimit(order);
 

@@ -79,10 +79,15 @@ public class FixEngineClient {
         send(new FixMessage(fixHeader, fixBody, FixTrailer.getTrailer(fixHeader, fixBody)));
     }
 
+    static float truncatePrice(float price) {
+        int temp = (int) (price * 100);
+        return (float) temp / 100;
+    }
+
     public void sendCancelOrder(Order order) {
         crtSeqNr++;
 
-        Order cancelOrder = new Order(getNewClientOrderId(), order.symbol, order.price, order.quantity, order.side);
+        Order cancelOrder = new Order(getNewClientOrderId(), order.symbol, truncatePrice(order.price), order.quantity, order.side);
         FixBodyCancel fixBody =
                 new FixBodyCancel(Integer.toString(order.clientOrderId), Integer.toString(order.exchangeOrderID),
                         Integer.toString(cancelOrder.clientOrderId), cancelOrder.symbol, cancelOrder.side,
