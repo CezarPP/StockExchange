@@ -52,7 +52,7 @@ public class FixEngineClient {
             this.in = in;
             this.out = out;
             sendLogin();
-            waitLoginResponse();
+            waitResponse();
             new ReadClientThread(in, frame, this).start();
         } catch (Exception e) {
             System.err.println(e.getMessage());
@@ -110,7 +110,11 @@ public class FixEngineClient {
         send(new FixMessage(fixHeader, fixBody, FixTrailer.getTrailer(fixHeader, fixBody)));
     }
 
-    private void waitLoginResponse() {
+    public void logout() {
+        sendLogout();
+    }
+
+    private void waitResponse() {
         try {
             in.readLine();
         } catch (IOException e) {
@@ -118,10 +122,10 @@ public class FixEngineClient {
         }
     }
 
-    public void logout() {
+    private void sendLogout() {
         crtSeqNr++;
 
-        FixBodyLogout fixBody = new FixBodyLogout();
+        FixBodyLogout fixBody = new FixBodyLogout("Logging out");
         FixHeader fixHeader = new FixHeader(BeginString.Fix_4_4, fixBody.toString().length(), MessageType.Logout,
                 senderCompID, targetCompID, crtSeqNr, OffsetDateTime.now());
         send(new FixMessage(fixHeader, fixBody, FixTrailer.getTrailer(fixHeader, fixBody)));

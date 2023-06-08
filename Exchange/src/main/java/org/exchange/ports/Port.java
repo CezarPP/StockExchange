@@ -69,6 +69,10 @@ public class Port extends Thread {
                     fixEnginePort.setClientCompId(clientCompId);
 
                     PortsBroadcastListenerFactory.getInstance().addClient(clientCompId, fixEnginePort);
+                } else if (fixMessage.header().messageType == MessageType.Logout) {
+                    fixEnginePort.sendLogout(fixMessage);
+                    SimpleServer.removePort(clientId);
+                    break;
                 }
             }
         } catch (IOException e) {

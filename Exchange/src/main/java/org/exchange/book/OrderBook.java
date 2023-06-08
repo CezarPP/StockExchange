@@ -21,7 +21,7 @@ public class OrderBook extends Thread implements OrderBookInterface {
     OrderBook(Symbol symbol) {
         this.symbol = symbol;
         askLimits = new LimitsTreeMap<>(); // ascending
-        bidLimits = new LimitsTreeMap<Limit>(true); // descending
+        bidLimits = new LimitsTreeMap<>(true); // descending
         orders = new HashMap<>();
     }
 
@@ -196,14 +196,9 @@ public class OrderBook extends Thread implements OrderBookInterface {
         return bidLimits.getFirstN(cntEntries);
     }
 
-    static float truncatePrice(float price) {
-        int temp = (int) (price * 100);
-        return (float) temp / 100;
-    }
-
     @Override
     public void run() {
-        while (true) {
+        while (!Thread.interrupted()) {
             try {
                 if (queue.isEmpty())
                     continue;

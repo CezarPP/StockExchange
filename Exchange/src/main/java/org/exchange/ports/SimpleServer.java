@@ -13,7 +13,7 @@ public class SimpleServer {
 
     static public void startSimpleServer() {
         try (ServerSocket serverSocket = new ServerSocket(PORT)) {
-            while (true) {
+            while (!Thread.interrupted()) {
                 System.out.println("Waiting for a client ...");
                 Socket socket = serverSocket.accept();
                 System.out.println("Starting client thread ...");
@@ -29,5 +29,9 @@ public class SimpleServer {
 
     static public Port getPortForClient(int clientId) {
         return clientToPort.get(clientId);
+    }
+
+    static public void removePort(int clientId) {
+        clientToPort.remove(clientId);
     }
 }

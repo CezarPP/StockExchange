@@ -74,6 +74,15 @@ public class FixEnginePort {
         send(new FixMessage(fixHeader, fixBody, FixTrailer.getTrailer(fixHeader, fixBody)));
     }
 
+    public void sendLogout(FixMessage fixMessage) {
+        crtSeqNr++;
+
+        FixBodyLogout fixBody = new FixBodyLogout("Logout acknowledgment");
+        FixHeader fixHeader = new FixHeader(BeginString.Fix_4_4, fixBody.toString().length(), MessageType.Logout,
+                exchangeCompId, fixMessage.header().senderCompID, crtSeqNr, OffsetDateTime.now());
+        send(new FixMessage(fixHeader, fixBody, FixTrailer.getTrailer(fixHeader, fixBody)));
+    }
+
     private void sendBody(FixBody fixBody, MessageType messageType) {
         ++crtSeqNr;
         FixHeader fixHeader = new FixHeader(BeginString.Fix_4_4, fixBody.toString().length(),

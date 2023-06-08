@@ -5,8 +5,6 @@ import org.common.symbols.Symbol;
 import javax.swing.*;
 import javax.swing.table.DefaultTableModel;
 import java.awt.*;
-import java.util.Comparator;
-import java.util.Vector;
 
 /**
  * There should be one panel for each stock
@@ -38,14 +36,12 @@ public class BidAskPanel extends JPanel {
     public void addBid(PanelOrder panelOrder) {
         String formattedPrice = String.format("%.2f", panelOrder.price());
         addOrUpdate(bidTableModel, panelOrder.id(), formattedPrice, panelOrder.quantity());
-        // sortTable(bidTableModel, (o1, o2) -> Double.compare((double) ((Vector<?>) o2).get(1), (double) ((Vector<?>) o1).get(1)));
         setVisible(true);
     }
 
     public void addAsk(PanelOrder panelOrder) {
         String formattedPrice = String.format("%.2f", panelOrder.price());
         addOrUpdate(askTableModel, panelOrder.id(), formattedPrice, panelOrder.quantity());
-        // sortTable(askTableModel, Comparator.comparingDouble(o -> (double) ((Vector<?>) o).get(1)));
         setVisible(true);
     }
 
@@ -60,12 +56,6 @@ public class BidAskPanel extends JPanel {
         tableModel.addRow(rowData);
         setVisible(true);
     }
-/*
-    private void sortTable(DefaultTableModel tableModel, Comparator<Object> comparator) {
-        tableModel.getDataVector().sort(comparator);
-        tableModel.fireTableDataChanged();
-        setVisible(true);
-    }*/
 
     public void removeAllBids() {
         bidTableModel.setRowCount(0);

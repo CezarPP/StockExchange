@@ -1,12 +1,9 @@
 package org.gui;
 
-import org.client.FixEngineClient;
 import org.common.symbols.Symbol;
 
 import javax.swing.*;
 import java.awt.*;
-import java.awt.event.ComponentAdapter;
-import java.awt.event.ComponentEvent;
 
 public class StockExchangeClientFrame extends JFrame {
     private BidAskPanel bidAskPanel = null;
@@ -42,7 +39,6 @@ public class StockExchangeClientFrame extends JFrame {
             splitPane.setDividerLocation(0.5);
         });
     }
-
 
     public UserOrdersPanel getUserOrdersPanel() {
         return userOrdersPanel;

@@ -42,7 +42,8 @@ public class ReadClientThread extends Thread {
                     handleExecutionReport(fixMessage);
                 } else if (fixMessage.header().messageType == MessageType.OrderCancelReject) {
                     handleCancelReject(fixMessage);
-                }
+                } else if (fixMessage.header().messageType == MessageType.Logout)
+                    System.exit(0);
             }
         } catch (IOException e) {
             System.err.println(e.getMessage());

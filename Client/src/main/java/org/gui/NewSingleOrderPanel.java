@@ -92,6 +92,7 @@ public class NewSingleOrderPanel extends JPanel implements TimerObserver {
                     "Exit Confirmation", JOptionPane.YES_NO_OPTION
             );
             if (confirm == 0) {
+                fixEngine.logout();
                 System.exit(0);
             }
         });
